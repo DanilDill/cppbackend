@@ -1,0 +1,4 @@
+add_subdirectory(TCPClient)
+add_subdirectory(TCPServer)
+add_subdirectory(UDPClient)
+add_subdirectory(UDPServer)
