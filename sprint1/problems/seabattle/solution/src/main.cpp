@@ -74,11 +74,24 @@ public:
         // TODO: реализуйте самостоятельно
         if (my_initiative) //we are server
         {
-
+            boost::system::error_code ec;
+            socket.write_some(net::buffer("Hello, I'm server!\n"sv), ec);
+            net::streambuf stream_buf;
+            net::read_until(socket, stream_buf, '\n', ec);
+            std::string client_data{std::istreambuf_iterator<char>(&stream_buf),
+                                    std::istreambuf_iterator<char>()};
+            std::cout << "Client said: "sv << client_data << std::endl;
         }
         else //we are client
         {
 
+            boost::system::error_code ec;
+            socket.write_some(net::buffer("Hello, I'm client!\n"sv), ec);
+            net::streambuf stream_buf;
+            net::read_until(socket, stream_buf, '\n', ec);
+            std::string server_data{std::istreambuf_iterator<char>(&stream_buf),
+                                    std::istreambuf_iterator<char>()};
+            std::cout << "Server responded: "sv << server_data << std::endl;
         }
     }
 
