@@ -62,14 +62,24 @@ static bool WriteExact(tcp::socket& socket, std::string_view data) {
     return !ec;
 }
 
-class SeabattleAgent {
+class SeabattleAgent
+        {
 public:
     SeabattleAgent(const SeabattleField& field)
         : my_field_(field) {
     }
 
-    void StartGame(tcp::socket& socket, bool my_initiative) {
+    void StartGame(tcp::socket& socket, bool my_initiative)
+    {
         // TODO: реализуйте самостоятельно
+        if (my_initiative) //we are server
+        {
+
+        }
+        else //we are client
+        {
+
+        }
     }
 
 private:
@@ -112,15 +122,40 @@ void StartServer(const SeabattleField& field, unsigned short port)
     SeabattleAgent agent(field);
 
     // TODO: реализуйте самостоятельно
+    net::io_context context;
+    boost::asio::ip::tcp::endpoint endpoint(net::ip::make_address("127.0.0.1"), port);
+    tcp::acceptor acceptor(context);
+    acceptor.open(endpoint.protocol());
+    acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+    acceptor.bind(endpoint);
+    acceptor.listen(1);
+    std::cout << "Waiting for connection on "sv << "127.0.0.1" << ":" << port  << std::endl;
+    boost::system::error_code ec;
+    tcp::socket socket{context};
+    acceptor.accept(socket, ec);
 
     agent.StartGame(socket, false);
 };
 
 void StartClient(const SeabattleField& field, const std::string& ip_str, unsigned short port) {
     SeabattleAgent agent(field);
+    boost::system::error_code ec;
+    auto endpoint = tcp::endpoint(net::ip::make_address(ip_str, ec), port);
 
-    // TODO: реализуйте самостоятельно
+    if (ec) {
+        std::cout << "Wrong IP format"sv << std::endl;
+        return;
+    }
 
+    net::io_context io_context;
+    tcp::socket socket{io_context};
+    socket.connect(endpoint, ec);
+
+    if (ec)
+    {
+        std::cout << "Can't connect to server"sv << std::endl;
+        return ;
+    }
     agent.StartGame(socket, true);
 };
 
