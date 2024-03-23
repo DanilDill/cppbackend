@@ -25,6 +25,6 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
 # Проект содержит единственный исходный файл src/main.cpp
-add_executable(seabattle src/main.cpp src/seabattle.h  src/tcp_instance.h src/server.h src/client.h)
+add_executable(seabattle src/main.cpp src/seabattle.h )
 # Просим компоновщик подключить библиотеку для поддержки потоков
 target_link_libraries(seabattle PRIVATE Threads::Threads)

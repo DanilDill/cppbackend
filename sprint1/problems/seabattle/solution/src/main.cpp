@@ -13,7 +13,6 @@
 #include <thread>
 #include <string_view>
 
-#include "server.h"
 namespace net = boost::asio;
 using net::ip::tcp;
 using namespace std::literals;
@@ -71,28 +70,84 @@ public:
 
     void StartGame(tcp::socket& socket, bool my_initiative)
     {
-        // TODO: реализуйте самостоятельно
-        if (my_initiative) //we are server
-        {
-            boost::system::error_code ec;
-            socket.write_some(net::buffer("Hello, I'm server!\n"sv), ec);
-            net::streambuf stream_buf;
-            net::read_until(socket, stream_buf, '\n', ec);
-            std::string client_data{std::istreambuf_iterator<char>(&stream_buf),
-                                    std::istreambuf_iterator<char>()};
-            std::cout << "Client said: "sv << client_data << std::endl;
-        }
-        else //we are client
-        {
 
-            boost::system::error_code ec;
-            socket.write_some(net::buffer("Hello, I'm client!\n"sv), ec);
-            net::streambuf stream_buf;
-            net::read_until(socket, stream_buf, '\n', ec);
-            std::string server_data{std::istreambuf_iterator<char>(&stream_buf),
-                                    std::istreambuf_iterator<char>()};
-            std::cout << "Server responded: "sv << server_data << std::endl;
+        boost::system::error_code ec;
+        PrintFields();
+        while (!IsGameEnded())
+        {
+            if (my_initiative)
+            {
+
+                std::string my_turn;
+                std::cout << "Your turn : ";
+                std::cin >> my_turn;
+                auto your_parsed_data = ParseMove(my_turn);
+                // B1 =
+                std::cout << "Parsed turn : " << your_parsed_data ->first << " " << your_parsed_data->second<< std::endl;
+                if(your_parsed_data)
+                {
+                    WriteExact(socket,MoveToString(*your_parsed_data));
+                    auto shootResult = ReadExact<1>(socket);
+                    switch (static_cast<SeabattleField::ShotResult>(stoi(*shootResult)))
+                    {
+                        case SeabattleField::ShotResult::MISS:
+                            other_field_.MarkMiss(your_parsed_data->second, your_parsed_data->first);
+                            my_initiative = !my_initiative;
+                            std::cout<< "Miss\n";
+                            break;
+                        case SeabattleField::ShotResult::HIT:
+                            other_field_.MarkHit(your_parsed_data->second, your_parsed_data->first);
+                            std::cout << "Hit\n";
+                            break;
+                        case SeabattleField::ShotResult::KILL:
+                            other_field_.MarkKill(your_parsed_data->second, your_parsed_data->first);
+                            std::cout<<"Kill\n";
+                            break;
+
+                    }
+                    PrintFields();
+
+                }
+                else
+                {
+                     std::cout << "Wrong input. Try again.\n";
+                     continue;
+                }
+            }
+            else
+            {
+                auto enemy_turn = ReadExact<2>(socket);
+                auto parsed_enemy_data = ParseMove(*enemy_turn);
+                if (parsed_enemy_data)
+                {
+                    std::cout << "Shot to " << *enemy_turn << std::endl;
+                    auto result = my_field_.Shoot(parsed_enemy_data->second,parsed_enemy_data->first );
+                    switch (result)
+                    {
+                        case SeabattleField::ShotResult::MISS:
+                            my_field_.MarkMiss(parsed_enemy_data->second,parsed_enemy_data->first );
+                            my_initiative= ! my_initiative;
+                            WriteExact(socket,"0");
+                            break;
+                        case SeabattleField::ShotResult::HIT:
+                            my_field_.MarkHit(parsed_enemy_data->second,parsed_enemy_data->first );
+                            WriteExact(socket,"1");
+                            break;
+                        case SeabattleField::ShotResult::KILL:
+                            my_field_.MarkKill(parsed_enemy_data->second,parsed_enemy_data->first );
+                            WriteExact(socket,"2");
+                            break;
+
+                    }
+                    PrintFields();
+
+                }
+
+            }
+
         }
+        std::cout << "GAME OVER";
+
     }
 
 private:
@@ -123,7 +178,6 @@ private:
         return my_field_.IsLoser() || other_field_.IsLoser();
     }
 
-    // TODO: добавьте методы по вашему желанию
 
 private:
     SeabattleField my_field_;
@@ -133,8 +187,6 @@ private:
 void StartServer(const SeabattleField& field, unsigned short port)
 {
     SeabattleAgent agent(field);
-
-    // TODO: реализуйте самостоятельно
     net::io_context context;
     boost::asio::ip::tcp::endpoint endpoint(net::ip::make_address("127.0.0.1"), port);
     tcp::acceptor acceptor(context);
@@ -150,7 +202,8 @@ void StartServer(const SeabattleField& field, unsigned short port)
     agent.StartGame(socket, false);
 };
 
-void StartClient(const SeabattleField& field, const std::string& ip_str, unsigned short port) {
+void StartClient(const SeabattleField& field, const std::string& ip_str, unsigned short port)
+{
     SeabattleAgent agent(field);
     boost::system::error_code ec;
     auto endpoint = tcp::endpoint(net::ip::make_address(ip_str, ec), port);
@@ -183,7 +236,8 @@ int main(int argc, const char** argv) {
 
     if (argc == 3) {
         StartServer(fieldL, std::stoi(argv[2]));
-    } else if (argc == 4) {
+    } else if (argc == 4)
+    {
         StartClient(fieldL, argv[2], std::stoi(argv[3]));
     }
 }
