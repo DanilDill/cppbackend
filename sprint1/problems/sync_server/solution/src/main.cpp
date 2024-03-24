@@ -75,7 +75,7 @@ StringResponse HandleGet(StringRequest&& req)
     };
     auto name = req.target().substr(1);
     std::stringstream ss;
-    ss<< "<strong>" << "Hello, "<< name<< "</strong>";
+    ss << "Hello, "<<name ;
     return text_response(http::status::ok, ss.view());
 }
 
