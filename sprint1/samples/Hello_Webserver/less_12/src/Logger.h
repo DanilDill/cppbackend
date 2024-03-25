@@ -1,8 +1,23 @@
-//
-// Created by danil on 25.03.2024.
-//
+#include <chrono>
+#include <syncstream>
+#include <iostream>
 
-#ifndef HELLO_LOGGER_H
-#define HELLO_LOGGER_H
+using namespace std::chrono;
+using namespace std::literals;
 
-#endif //HELLO_LOGGER_H
+class Logger {
+public:
+    explicit Logger(std::string id)
+            : id_(std::move(id)) {
+    }
+
+    void LogMessage(std::string_view message) const {
+        std::osyncstream os{std::cout}; //c++20
+        os << id_ << "> ["sv << duration<double>(steady_clock::now() - start_time_).count()
+           << "s] "sv << message << std::endl;
+    }
+
+private:
+    std::string id_;
+    steady_clock::time_point start_time_{steady_clock::now()};
+}; 
