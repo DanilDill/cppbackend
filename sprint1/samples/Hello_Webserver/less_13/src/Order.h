@@ -36,9 +36,11 @@ private:
     void RoastCutlet()
     {
         logger_.LogMessage("Start roasting cutlet"sv);
-        roast_timer_.async_wait([self = shared_from_this()](sys::error_code ec) {
-            self->OnRoasted(ec);
-        });
+        roast_timer_.async_wait(
+                // OnRoasted будет вызван последовательным исполнителем strand_
+                net::bind_executor(strand_, [self = shared_from_this()](sys::error_code ec) {
+                    self->OnRoasted(ec);
+                }));
     };
     void OnRoasted(sys::error_code ec) {
         ThreadChecker checker{counter_};
@@ -52,9 +54,12 @@ private:
     }
     void MarinadeOnion() {
         logger_.LogMessage("Start marinading onion"sv);
-        marinade_timer_.async_wait([self = shared_from_this()](sys::error_code ec) {
-            self->OnOnionMarinaded(ec);
-        });
+        marinade_timer_.async_wait(
+                // OnOnionMarinaded будет вызван последовательным исполнителем strand_
+                net::bind_executor(strand_, [self = shared_from_this()](sys::error_code ec)
+                {
+                    self->OnOnionMarinaded(ec);
+                }));
     };
 
     void OnOnionMarinaded(sys::error_code ec) {
@@ -123,6 +128,7 @@ private:
 
 private:
     net::io_context& io_;
+    net::strand<net::io_context::executor_type> strand_{net::make_strand(io_)};
     int id_;
     bool with_onion_;
     bool onion_marinaded_ = false;
