@@ -23,27 +23,31 @@ void RunWorkers(unsigned n, const Fn& fn) {
     }
     fn();
 }
-int main() {
+
+int main()
+{
     using osync = std::osyncstream;
 
     net::io_context io;
-    auto strand = net::make_strand(io);
+    auto strand1 = net::make_strand(io);
 
-    net::post(strand, [strand] {
-        net::post(strand, [] {
+    net::post(strand1, [strand1] {  // (1)
+        net::post(strand1, [] {     // (2)
             osync(std::cout) << 'A';
         });
-        net::dispatch(strand, [] {
+        net::dispatch(strand1, [] {  // (3)
             osync(std::cout) << 'B';
         });
         osync(std::cout) << 'C';
     });
 
-    net::post(io, [&io] {
-        net::post(io, [] {
+    auto strand2 = net::make_strand(io);
+    // Эти функции выполняются в strand2
+    net::post(strand2, [strand2] {  // (4)
+        net::post(strand2, [] {     // (5)
             osync(std::cout) << 'D';
         });
-        net::dispatch(io, [] {
+        net::dispatch(strand2, [] {  // (6)
             osync(std::cout) << 'E';
         });
         osync(std::cout) << 'F';
