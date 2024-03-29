@@ -27,12 +27,18 @@ public:
     void OrderHotDog(HotDogHandler handler)
     {
         // TODO: Реализуйте метод самостоятельно
-        std::make_shared<Order>(io_,store_,*gas_cooker_,std::move(handler))->Execute();
+           const int order_id = ++_order_id;
+          std::make_shared<Order>(io_,strand_store,order_id,store_,*gas_cooker_,std::move(handler))->Execute();
+        //order_id = ++order_id;
+        //std::make_shared<Order>(io_,order_id,store_,*gas_cooker_,std::move(handler))->Execute();
         // При необходимости реализуйте дополнительные классы
     }
 
 private:
+    std::atomic_int _order_id = 0;
     net::io_context& io_;
+
+    net::strand<net::io_context::executor_type> strand_store{net::make_strand(io_)};
     // Используется для создания ингредиентов хот-дога
     Store store_;
     // Газовая плита. По условию задачи в кафетерии есть только одна газовая плита на 8 горелок

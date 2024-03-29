@@ -93,7 +93,7 @@ public:
 
         // Реализуйте этот метод аналогично Sausage::StartFry
         if (baking_start_time_) {
-            throw std::logic_error("Frying already started");
+            throw std::logic_error("Baking already started");
         }
         baking_start_time_ = Clock::now();
         gas_cooker_lock_ = GasCookerLock{cooker.shared_from_this()};
@@ -111,10 +111,10 @@ public:
     // Останавливает приготовление хлеба и освобождает горелку.
     void StopBaking() {
         if (!baking_start_time_) {
-            throw std::logic_error("Frying has not started");
+            throw std::logic_error("Baking has not started");
         }
         if (baking_end_time_) {
-            throw std::logic_error("Frying has already stopped");
+            throw std::logic_error("Baking has already stopped");
         }
         baking_end_time_ = Clock::now();
         // Освобождаем горелку
@@ -132,7 +132,7 @@ public:
     {
         // Реализуйте этот метод аналогично Sausage::GetCookDuration
         if (!baking_start_time_ || !baking_end_time_) {
-            throw std::logic_error("Sausage has not been cooked");
+            throw std::logic_error("Bread has not been cooked");
         }
         return *baking_end_time_ - *baking_start_time_;
     }
@@ -156,5 +156,5 @@ public:
     }
 
 private:
-    int next_id_ = 0;
+    size_t next_id_ = 0;
 };

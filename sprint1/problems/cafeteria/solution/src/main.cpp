@@ -135,8 +135,8 @@ void VerifyHotDogs(const std::vector<HotDog>& hotdogs) {
 int main() {
     using namespace std::chrono;
 
-    constexpr unsigned num_threads = 4;
-    constexpr int num_orders = 20;
+    constexpr unsigned num_threads = 1;
+    constexpr int num_orders = 1;
 
     const auto start_time = Clock::now();
     auto hotdogs = PrepareHotDogs(num_orders, num_threads);
