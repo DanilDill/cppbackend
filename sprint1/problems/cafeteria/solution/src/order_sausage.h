@@ -49,6 +49,7 @@ public:
             self->_logger.LogMessage("Sausage #"s + std::to_string(self->_sausage->GetId()) + "has start frying ");
             self->_sausage->StartFry(self->_cooker,[self]()
             {
+                self->_timer_.expires_after(1510ms);
                 self->_timer_.async_wait(net::bind_executor(self->strand_baking,[self](sys::error_code ec)
                 {
                     self->OnBaking();
@@ -74,5 +75,5 @@ private:
     Logger& _logger;
     net::strand<net::io_context::executor_type> strand_baking{net::make_strand(_context)};
     SausageFryingHandler _handler;
-    Timer _timer_{_context,1510ms};
+    Timer _timer_{_context};
 };

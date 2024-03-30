@@ -49,6 +49,7 @@ public:
                 net::dispatch(self->strand_baking,[self]()
                 {
                     self->_logger.LogMessage("Bread #"s + std::to_string(self->_bread->GetId()) + "has start backed ");
+                    self->_timer_.expires_after(1010ms);
                     self->_timer_.async_wait(net::bind_executor(self->strand_baking,[self](sys::error_code ec)
                     {
                         self->OnBaking();
@@ -77,5 +78,5 @@ private:
     Logger& _logger;
     net::strand<net::io_context::executor_type> strand_baking{net::make_strand(_context)};
     BreadBackingHandler _handler;
-    Timer _timer_{_context,1010ms};
+    Timer _timer_{_context};
 };

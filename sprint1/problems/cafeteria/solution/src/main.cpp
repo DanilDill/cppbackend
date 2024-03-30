@@ -135,8 +135,8 @@ void VerifyHotDogs(const std::vector<HotDog>& hotdogs) {
 int main() {
     using namespace std::chrono;
 
-    constexpr unsigned num_threads = 1;
-    constexpr int num_orders = 5;
+    constexpr unsigned num_threads = 4;
+    constexpr int num_orders = 20;
 
     const auto start_time = Clock::now();
     auto hotdogs = PrepareHotDogs(num_orders, num_threads);
@@ -151,7 +151,7 @@ int main() {
     // Ожидаемое время приготовления 20 хот-догов на 4 рабочих потоках: от 7 до 7.5 секунд
     //
     // При пошаговой отладке время работы программы может быть больше
-   // assert(cook_duration >= 7s && cook_duration <= 7.5s);
+    assert(cook_duration >= 7s && cook_duration <= 7.5s);
 
     VerifyHotDogs(hotdogs);
 }
