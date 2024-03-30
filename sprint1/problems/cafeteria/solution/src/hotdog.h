@@ -3,7 +3,7 @@
 #include <functional>
 #include <optional>
 #include <stdexcept>
-
+#include <sstream>
 #include "gascooker.h"
 #include "ingredients.h"
 
@@ -28,12 +28,22 @@ public:
         , bread_{std::move(bread)} {
         if (sausage_->GetCookDuration() < MIN_SAUSAGE_COOK_DURATION
             || sausage_->GetCookDuration() > MAX_SAUSAGE_COOK_DURATION) {
-            throw std::invalid_argument("Invalid sausage cook duration");
+            std::stringstream  ss;
+            auto as_seconds = [](auto d) {
+                return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();
+            };
+            ss << "Invalid sausage #" << sausage_->GetId() << " cook duration: " << as_seconds(sausage_->GetCookDuration());
+            throw std::invalid_argument(ss.str());
         }
 
         if (bread_->GetBakingDuration() < MIN_BREAD_COOK_DURATION
             || bread_->GetBakingDuration() > MAX_BREAD_COOK_DURATION) {
-            throw std::invalid_argument("Invalid sausage cook duration");
+            std::stringstream  ss;
+            auto as_seconds = [](auto d) {
+                return std::chrono::duration_cast<std::chrono::duration<double>>(d).count();
+            };
+            ss << "Invalid bread #" << bread_->GetId() << " cook duration" << as_seconds(bread_->GetBakingDuration());
+            throw std::invalid_argument(ss.str());
         }
     }
 

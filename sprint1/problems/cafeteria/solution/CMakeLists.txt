@@ -21,6 +21,5 @@ add_executable(cafeteria
 	src/hotdog.h
 	src/gascooker.h
 	src/ingredients.h
-	src/clock.h
-        src/order_hotdog.h src/logger.h src/thread_checker.h)
+	src/clock.h src/order_hotdog.h src/logger.h src/thread_checker.h src/order_bread.h src/order_sausage.h)
 target_link_libraries(cafeteria PRIVATE Threads::Threads)
