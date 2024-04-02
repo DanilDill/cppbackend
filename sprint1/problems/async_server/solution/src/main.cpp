@@ -113,11 +113,16 @@ int main() {
     });
 
     const auto address = net::ip::make_address("0.0.0.0");
-    constexpr net::ip::port_type port = 8080;
-    http_server::ServeHttp(ioc, {address, port}, [](auto&& req, auto&& sender)
+    constexpr net::ip::port_type port = 8080;//1 начинаем слушать входящие
+    auto handler  = [](auto&& req, auto&& sender)
     {
-         sender(HandleRequest(std::forward<decltype(req)>(req)));
-    });
+        sender(HandleRequest(std::forward<decltype(req)>(req))); // 19 вызывем функц объект sender, в аргумент которого передаем функцию, которая вернет http::response<http::string_body>
+    };
+
+    using handler_type = decltype(handler);
+
+
+    http_server::ServeHttp(ioc, {address, port}, std::move(handler));
 
     // Эта надпись сообщает тестам о том, что сервер запущен и готов обрабатывать запросы
     std::cout << "Server has started..."sv << std::endl;

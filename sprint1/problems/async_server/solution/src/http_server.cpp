@@ -13,9 +13,9 @@ namespace http_server
     SessionBase::SessionBase(tcp::socket&& socket)
     :stream_(std::move(socket)){}
 
-    void SessionBase::Run()
+    void SessionBase::Run() //13 запускаем
     {
-        net::dispatch(stream_.get_executor(),
+        net::dispatch(stream_.get_executor(), // 14 выполняем операцию чтения
                       beast::bind_front_handler(&SessionBase::Read, GetSharedThis()));
     }
     void SessionBase::OnWrite(bool close, beast::error_code ec, [[maybe_unused]] std::size_t bytes_written)
@@ -38,7 +38,7 @@ namespace http_server
         request_ = {};
         stream_.expires_after(30s);
         // Считываем request_ из stream_, используя buffer_ для хранения считанных данных
-        http::async_read(stream_, buffer_, request_,
+        http::async_read(stream_, buffer_, request_, // 15 выполняем асинхронное чтение коллбэчим  OnRead
                 // По окончании операции будет вызван метод OnRead
                          beast::bind_front_handler(&SessionBase::OnRead, GetSharedThis()));
     }
@@ -53,7 +53,7 @@ namespace http_server
         if (ec) {
             return ReportError(ec, "read"sv);
         }
-        HandleRequest(std::move(request_));
+        HandleRequest(std::move(request_)); // 16 обрабатывем запрос
     }
 
     void SessionBase::Close()
