@@ -1,6 +1,6 @@
 
 #include "request_handler.h"
-
+#include "json_response.h"
 namespace http_handler
 {
     StringResponse RequestHandler::MakeStringResponse(http::status status, std::string_view body, unsigned http_version,
@@ -24,24 +24,61 @@ namespace http_handler
         return text_response(http::status::ok, ""sv);
     }
 
-    StringResponse RequestHandler::HandleGetMaps()
+    StringResponse RequestHandler::HandleGetMap(const std::string& map_id, StringRequest&& req)
+    {
+
+      auto map  = game_.FindMap(model::Map::Id(map_id));
+      const auto text_response = [&req, this](http::status status, std::string_view text)
+      {
+          return MakeStringResponse(status, text, req.version(), req.keep_alive(),ContentType::APPLICATION_JSON);
+      };
+
+      if (map)
+      {
+          std::string map_json = json_responce::to_json(*map);
+          return text_response(http::status::ok,map_json);
+      }
+        return text_response(http::status::not_found,json_responce::NotFoundJson());
+    }
+
+
+    StringResponse RequestHandler::HandleGetMaps(StringRequest&& req)
     {
        auto maps =  game_.GetMaps();
+       auto maps_json_str = json_responce::to_json(maps);
+        const auto text_response = [&req, this](http::status status, std::string_view text)
+        {
+            return MakeStringResponse(status, text, req.version(), req.keep_alive(),ContentType::APPLICATION_JSON);
+        };
+        return text_response(http::status::ok,maps_json_str);
     }
 
 
     StringResponse RequestHandler::HandleGet(StringRequest&& req)
     {
+        auto target = req.target();
+        if (target == "/api/v1/maps")
+        {
+          return  HandleGetMaps(std::move(req));
+        }
+        if (target.starts_with("/api/v1/maps/"))
+        {
+            std::string map_id ( target.substr("/api/v1/maps/"sv.size()));
+            return HandleGetMap(map_id,std::move(req));
+        }
+        return HandleBadRequest(std::move(req));
+    }
+
+    StringResponse  RequestHandler::HandleBadRequest(StringRequest&& req)
+    {
+
         const auto text_response = [&req, this](http::status status, std::string_view text)
         {
-            return MakeStringResponse(status, text, req.version(), req.keep_alive());
+            return MakeStringResponse(status, text, req.version(), req.keep_alive(),ContentType::APPLICATION_JSON);
         };
-
-        auto name = req.target().substr(1);
-        std::stringstream ss;
-        ss << "Hello, "<<name ;
-        return text_response(http::status::ok, ss.view());
+        return text_response(http::status::bad_request,json_responce::BadRequestJson());
     }
+
     StringResponse RequestHandler::HandleUnexpected(StringRequest&& req)
     {
         const auto text_response = [&req, this](http::status status, std::string_view text)

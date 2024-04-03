@@ -22,10 +22,10 @@ add_executable(game_server
 	src/model.h
 	src/model.cpp
 	src/tagged.h
-	#src/boost_json.cpp
+	src/boost_json.cpp
 	src/json_loader.h
 	src/json_loader.cpp
 	src/request_handler.cpp
 	src/request_handler.h
-)
+		src/json_response.h src/json_response.cpp)
 target_link_libraries(game_server PRIVATE Threads::Threads)

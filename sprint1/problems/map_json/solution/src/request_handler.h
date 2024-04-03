@@ -13,6 +13,7 @@ using StringRequest = http::request<http::string_body>;
     struct ContentType {
         ContentType() = delete;
         constexpr static std::string_view TEXT_HTML = "text/html"sv;
+        constexpr static std::string_view APPLICATION_JSON = "application/json"sv;
 
     };
 class RequestHandler {
@@ -36,7 +37,10 @@ public:
                                       std::string_view content_type = ContentType::TEXT_HTML);
 
     StringResponse HandleHead(StringRequest&& req);
-    StringResponse HandleGetMaps();
+
+    StringResponse HandleGetMaps(StringRequest&& req);
+    StringResponse HandleGetMap(const std::string& map_id, StringRequest&& req);
+    StringResponse HandleBadRequest(StringRequest&& req);
     StringResponse HandleGet(StringRequest&& req);
     StringResponse HandleUnexpected(StringRequest&& req);
     StringResponse HandleRequest(StringRequest&& req);
