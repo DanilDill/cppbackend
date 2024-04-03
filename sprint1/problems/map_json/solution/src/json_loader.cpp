@@ -46,26 +46,60 @@ namespace json_loader
 
             if (road.as_object().contains("x1"))
             {
+                model::Coord x1 = road.at("x1").as_int64();
+                roads_vec.push_back(model::Road(model::Road::HORIZONTAL,{x0,y0},x1));
 
-            } else if (road.as_object().contains("x1"))
+            } else if (road.as_object().contains("y1"))
             {
-
+                model::Coord  y1 = road.at("y1").as_int64();
+                roads_vec.push_back(model::Road(model::Road::VERTICAL,{x0,y1},y1));
             }
             else
             {
                 throw std::logic_error("invalid road");
             }
 
-          //  model::Coord x1 = build.at("w").as_int64();
-         //   model::Coord h = build.at("h").as_int64();
         }
+        return roads_vec;
+    }
+
+    Offices serializeOffices(boost::json::value &map_json)
+    {
+        auto offices_json = map_json.at("offices").as_array();
+        Offices offices_vec;
+        for (auto& office: offices_json)
+        {
+            model::Office::Id id(std::string(office.at("id").as_string()));
+            model::Point position{model::Coord(office.at("x").as_int64()),model::Coord (office.at("y").as_int64())};
+            model::Offset offset{model::Dimension( office.at("offsetX").as_int64()),model::Dimension (office.at("offsetY").as_int64())};
+            offices_vec.emplace_back(model::Office(id,position,offset));
+        }
+        return offices_vec;
     }
     model::Map serialize_map(boost::json::value &map_json)
 {
     Id id_ = Id(std::string(map_json.at("id").as_string()));
     std::string map_name(map_json.at("name").as_string());
-    Roads roads_ ;
+    Roads roads_ =  serializeRoads(map_json);
+    Buildings  buildings_ = serializeBuildings(map_json);
+    Offices  offices = serializeOffices(map_json);
+    model::Map map(id_,map_name);
 
+    for (auto& road : roads_)
+    {
+        map.AddRoad(road);
+    }
+
+    for (auto& building : buildings_)
+    {
+        map.AddBuilding(building);
+    }
+
+    for (auto & office: offices)
+    {
+        map.AddOffice(office);
+    }
+    return map;
 }
 
 model::Game LoadGame(const std::filesystem::path& json_path)
@@ -89,9 +123,10 @@ model::Game LoadGame(const std::filesystem::path& json_path)
 
     auto json_data = boost::json::parse(jsonStr);
     auto maps = json_data.as_object().at("maps").as_array();
-    for (auto& map : maps)
+    for (auto& map_json : maps)
     {
-        std::cout << boost::json::serialize(map)<<std::endl;
+        auto map = serialize_map(map_json);
+        game.AddMap(map);
     }
     return game;
 }
