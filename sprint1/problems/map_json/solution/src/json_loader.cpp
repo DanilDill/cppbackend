@@ -52,7 +52,7 @@ namespace json_loader
             } else if (road.as_object().contains("y1"))
             {
                 model::Coord  y1 = road.at("y1").as_int64();
-                roads_vec.push_back(model::Road(model::Road::VERTICAL,{x0,y1},y1));
+                roads_vec.push_back(model::Road(model::Road::VERTICAL,{x0,y0},y1));
             }
             else
             {
