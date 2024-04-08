@@ -70,9 +70,9 @@ namespace http_handler
     {
         const auto text_response = [&req, this](http::status status, std::string_view text)
         {
-            return MakeStringResponse(status, text, req.version(), req.keep_alive(),ContentType::APPLICATION_JSON);
+            return MakeStringResponse(status, text, req.version(), req.keep_alive(),ContentType::TEXT_PLAIN);
         };
-        return text_response(http::status::not_found,json_responce::NotFoundJson());
+        return text_response(http::status::not_found,"ERROR 404 Not found");
     }
     StringResponse RequestHandler::HandleUnexpected(StringRequest&& req)
     {
