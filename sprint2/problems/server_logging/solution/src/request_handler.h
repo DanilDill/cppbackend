@@ -82,11 +82,6 @@ public:
                                       bool keep_alive,
                                       std::string_view content_type = ContentType::TEXT_HTML);
 
-
-
-
-
-
     StringResponse HandleGetMaps(StringRequest&& req);
     StringResponse HandleGetMap(const std::string& map_id, StringRequest&& req);
     StringResponse HandleBadRequest(StringRequest&& req);

@@ -2,7 +2,7 @@
 ```sh
 mkdir build
 cd build
-conan install ..
+conan install --build=missing -if build_dir -s build_type=Debug
 cmake ..
 ```
 # Сборка
