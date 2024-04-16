@@ -28,10 +28,13 @@ namespace http_server {
         SessionBase& operator=(const SessionBase&) = delete;
         void Run();
     protected:
-        using HttpRequest = http::request<http::string_body>;
+        using HttpRequest = std::pair<http::request<http::string_body>,std::string>;
         explicit SessionBase(tcp::socket&& socket);
         ~SessionBase() = default;
-
+        std::string EndpointAddres()
+        {
+            return stream_.socket().remote_endpoint().address().to_string();
+        }
         template <typename Body, typename Fields>
         void Write(http::response<Body, Fields>&& response)
         {
@@ -81,6 +84,7 @@ namespace http_server {
 
         void HandleRequest(HttpRequest&& request) override
         {
+
             request_handler_(std::move(request), [self = this->shared_from_this()](auto&& response)
             {
                 self->Write(std::move(response));

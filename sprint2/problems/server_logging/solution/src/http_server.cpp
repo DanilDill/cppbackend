@@ -33,10 +33,10 @@ namespace http_server {
     {
         using namespace std::literals;
         // Очищаем запрос от прежнего значения (метод Read может быть вызван несколько раз)
-        request_ = {};
+        request_ = {{},EndpointAddres()};
         stream_.expires_after(30s);
         // Считываем request_ из stream_, используя buffer_ для хранения считанных данных
-        http::async_read(stream_, buffer_, request_,
+        http::async_read(stream_, buffer_, request_.first,
                 // По окончании операции будет вызван метод OnRead
                          beast::bind_front_handler(&SessionBase::OnRead, GetSharedThis()));
     }

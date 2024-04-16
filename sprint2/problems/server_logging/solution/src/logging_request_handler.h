@@ -12,60 +12,57 @@
 #include <queue>
 #include <ostream>
 #include <iostream>
+namespace http = boost::beast::http;
 template<typename Handler>
 class LoggingRequestHandler
 {
 public:
+
     LoggingRequestHandler (Handler& handler):
             decorated_handler_(handler)
     {
         InitLogger();
-        BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::info) << Log("port","8080","message","server started");
     };
-    template<class... Ts>
-    boost::json::value Log(const Ts&... args)
+
+    void Log(boost::log::trivial::severity_level lvl,const boost::json::value& data, const std::string& message="")
     {
-        try
-        {
-          std::queue<std::string>queue;
-          (queue.push(args),...);
-          if (queue.size() % 2 != 0)
-          {
-              throw std::logic_error("wrong json format");
-          }
-          boost::json::object res;
-          while (!queue.empty())
-          {
-                auto key = queue.front();
-                queue.pop();
-                auto value = queue.front();
-                queue.pop();
-                res.emplace(key,value);
-          }
-          return boost::json::value(std::move(res));
-        }
-        catch (const std::logic_error& er)
-        {
-            return "";
-        }
+        BOOST_LOG_SEV(logger, lvl) << data << "," << LogMessage(message);
+    };
+
+    std::string LogMessage(const std::string& msg)
+    {
+       std::stringstream ss;
+       ss << "\"" << "message" << "\"" << ":"<< "\"" << msg << "\"";
+        return ss.str();
     }
+
 
     void operator()(auto && req, auto&& send)
     {
-        auto senderFuncttor = [this, sender = std::move(send)](auto&& response)
+        auto  enpoint_str = req.second;
+        std::chrono::system_clock::time_point start_ts = std::chrono::system_clock::now();
+        auto senderFuncttor = [this, &start_ts, &enpoint_str, sender = std::move(send)](auto&& response)
         {
             /// я могу модифицировать обработчик отправки тут
-            boost::json::value logdata{{"response","response_data"}};
-            BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::info) << logdata;
+            auto content_type = response[http::field::content_type];
+            content_type = content_type == "" ? "null" : content_type;
+
+            std::chrono::system_clock::time_point end_ts = std::chrono::system_clock::now();
+
+
+            Log(boost::log::trivial::severity_level::info,{{"ip",enpoint_str},
+                                                           {"response_time", (end_ts - start_ts)/1ms},
+
+                                                           {"code",response.result_int()},{"content_type",content_type}},"responce sent");
             sender(response);
         };
-        boost::json::value logdata{{"request","request_data"}};
-        BOOST_LOG_SEV(logger, boost::log::trivial::severity_level::info) << logdata;
-        decorated_handler_(std::forward<decltype(req)>(req), std::forward<decltype(senderFuncttor)>(senderFuncttor));
-        // и тут
+        Log(boost::log::trivial::severity_level::info,{{"ip",enpoint_str},{"URI",req.first.target()},{"method",req.first.method_string()}},"request received");
+        decorated_handler_(std::forward<decltype(req.first)>(req.first), std::forward<decltype(senderFuncttor)>(senderFuncttor));
+
     }
 
 private:
+
     void InitLogger()
     {
         // Конфигурация формата вывода в JSON
