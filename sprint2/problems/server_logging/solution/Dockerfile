@@ -12,8 +12,9 @@ RUN apt update && \
 COPY conanfile.txt /app/
 RUN mkdir /app/build && cd /app/build && \
      conan profile new default --detect &&  \
-    conan install  --build=missing -if ./ ../
+     conan install ..   --build=missing -s build_type=Release -s compiler.libcxx=libstdc++11  -if ./
 # Папка data больше не нужна
+COPY ./static /app/static
 COPY ./src /app/src
 COPY CMakeLists.txt /app/
 
@@ -30,8 +31,9 @@ USER www
 
 # Скопируем приложение со сборочного контейнера в директорию /app.
 # Не забываем также папку data, она пригодится.
-COPY --from=build /app/build/bin/game_server /app/
+COPY --from=build /app/build/game_server /app/
 COPY ./data /app/data
+COPY ./static /app/static
 
 # Запускаем игровой сервер
-ENTRYPOINT ["/app/game_server", "/app/data/config.json"]
+ENTRYPOINT ["/app/game_server", "/app/data/config.json","app/static"]
