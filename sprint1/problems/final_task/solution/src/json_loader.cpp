@@ -2,10 +2,8 @@
 #include "json_atribute.h"
 #include <fstream>
 #include <iostream>
-#include <tuple>
 #include <boost/json.hpp>
 
-//#include <boost/json/src.hpp>
 namespace json_loader
 {
     using  Id = model::Map::Id;
@@ -67,7 +65,7 @@ namespace json_loader
         using attribute = JsonAttribute::OfficeArrayAttributes;
         auto offices_json = map_json.at(attribute::NAME).as_array();
         Offices offices_vec;
-        for (auto& office: offices_json)
+        for (const auto& office : offices_json)
         {
             model::Office::Id id(std::string(office.at(attribute::ATTR_ID).as_string()));
             model::Point position{model::Coord(office.at(attribute::ATTR_X).as_int64()),model::Coord (office.at(attribute::ATTR_Y).as_int64())};
@@ -96,7 +94,7 @@ namespace json_loader
         map.AddBuilding(building);
     }
 
-    for (const auto & office: offices)
+    for (const auto & office : offices)
     {
         map.AddOffice(office);
     }
