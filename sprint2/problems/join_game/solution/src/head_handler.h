@@ -1,9 +1,11 @@
+
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
-#include <boost/json.hpp>
-#include "model.h"
 #include "content_type.h"
 #include "staticfile_loader.h"
+#include "model.h"
+
+
 namespace http_handler
 {
     namespace beast = boost::beast;
@@ -12,18 +14,25 @@ namespace http_handler
     using FileResponse = http::response<http::file_body>;
     using StringRequest = http::request<http::string_body>;
 
-    class post_handler
+    class head_handler
     {
     public:
-        post_handler(StringRequest&& request, model::Game& game, file::file_loader& root);
+        head_handler(StringRequest&&request, model::Game& game, file::file_loader& root);
         StringResponse execute();
 
     private:
-        std::pair<std::string,std::string> parse();
         StringResponse MakeStringResponse(http::status status, std::string_view body, unsigned http_version,
+                                          bool keep_alive,
                                           std::string_view content_type = ContentType::APPLICATION_JSON);
 
-
+        StringResponse HandlePlayersList();
+        StringResponse HandleGetMaps();
+        StringResponse HandleUnathorized();
+        StringResponse HandleGetMap(const std::string& map_id);
+        StringResponse HandleNotFound();
+        StringResponse HandleBadRequest();
+        StringResponse HandleNotAllowed();
+        StringResponse PLayerNotFound();
     private:
         StringRequest _req;
         model::Game& game_;

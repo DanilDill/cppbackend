@@ -7,7 +7,9 @@
 #include "content_type.h"
 #include "staticfile_loader.h"
 
+#include "default_handler.h"
 #include "get_handler.h"
+#include "head_handler.h"
 #include "post_handler.h"
 namespace http_handler {
 
@@ -36,11 +38,11 @@ public:
             case http::verb::get:
                 return get_handler(std::move(req),game_,wwwroot).execute();
             case http::verb::head:
-                return HandleHead(std::move(req));
+                return head_handler(std::move(req), game_, wwwroot).execute();
             case http::verb::post:
                 return post_handler (std::move(req), game_, wwwroot).execute();
             default:
-                return HandleUnexpected(std::move(req));
+                return default_handler(std::move(req)).execute();//HandleUnexpected(std::move(req));
 
         }
     }

@@ -1,8 +1,11 @@
 #pragma once
 #include <string>
 #include <unordered_map>
+#include <map>
 #include <vector>
-
+#include <atomic>
+#include <optional>
+#include "Tokenizer.h"
 #include "tagged.h"
 
 namespace model {
@@ -167,14 +170,64 @@ private:
     Offices offices_;
 };
 
+class Dog
+{
+    //Todo
+};
+class Player
+{
+private:
+    int _id;
+    Map::Id _map_id;
+    std::string _name;
+    Dog* dog= nullptr;
+public:
+    Player():_map_id(""){};
+    Player(int id,const std::string& name,const Map::Id& map_id):
+    _name(name),_map_id(map_id),_id(id)
+    {};
+
+    const int GetId() const
+   {
+       return _id;
+   }
+
+    std::string GetName() const
+    {
+        return  _name;
+    }
+
+};
+
+
 class Game {
 public:
     using Maps = std::vector<Map>;
-
+    using PlayerHasher = util::TaggedHasher<Token>;
+    using Players = std::unordered_map<Token,Player,PlayerHasher>;
     void AddMap(Map map);
-
+    int AddPlayer(Token t, const std::string& player_name, const Map::Id& id)
+    {
+        auto size = players.size();
+        players[t] = Player(size,player_name,id);
+        return players[t].GetId();
+    };
     const Maps& GetMaps() const noexcept {
         return maps_;
+    }
+    std::optional<Player> FindPlayer(Token t)
+    {
+         auto player = players.find(t);
+        if (player != players.end())
+        {
+            return player->second;
+        }
+        return std::nullopt;
+    }
+
+    const Players& GetPLayers()
+    {
+        return players;
     }
 
     const Map* FindMap(const Map::Id& id) const noexcept {
@@ -186,8 +239,10 @@ public:
 
 private:
     using MapIdHasher = util::TaggedHasher<Map::Id>;
+
     using MapIdToIndex = std::unordered_map<Map::Id, size_t, MapIdHasher>;
 
+    Players players;
     std::vector<Map> maps_;
     MapIdToIndex map_id_to_index_;
 };

@@ -33,6 +33,32 @@ namespace file
         return std::nullopt;
     }
 
+    std::optional<http::response<http::string_body>> file_loader::try_get_head(const std::filesystem::path& filepath)
+    {
+        auto  canonical_path =  _root / fs::weakly_canonical(filepath);
+        if (isSubpath(canonical_path))
+        {
+
+            http::file_body::value_type file;
+            if (boost::system::error_code ec; file.open(canonical_path.c_str(),beast::file_mode::read, ec),ec)
+            {
+                return std::nullopt;
+            }
+            else
+            {
+                http::response<http::string_body> response;
+                response.version(11);
+                response.result(http::status::ok);
+                auto content_type = to_ContentType(get(boost::algorithm::to_lower_copy(canonical_path.extension().string())));
+                response.insert(http::field::content_type, content_type);
+                response.body() = "";
+                response.prepare_payload();
+                return  response;
+            }
+        }
+        return std::nullopt;
+    }
+
     MIMETYPE file_loader::get(const std::string& extension)
     {
 

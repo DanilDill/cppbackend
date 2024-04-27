@@ -23,6 +23,7 @@ namespace file
     {
     public:
         file_loader(const std::filesystem::path& root);
+        std::optional<http::response<http::string_body>> try_get_head(const std::filesystem::path& filepath);
         std::optional<http::response<http::file_body>> try_get(const std::filesystem::path& filepath);
         static MIMETYPE get(const std::string& extension);
         static std::string_view to_ContentType (MIMETYPE mimetype);

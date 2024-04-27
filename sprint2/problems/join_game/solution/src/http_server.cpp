@@ -56,8 +56,14 @@ namespace http_server {
 
     void SessionBase::Close()
     {
-        beast::error_code ec;
-        stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
+        try
+        {
+            stream_.socket().shutdown(tcp::socket::shutdown_send);
+        }
+        catch (std::exception& ex)
+        {
+            std::cerr << ex.what() << std::endl;
+        }
     }
 
 

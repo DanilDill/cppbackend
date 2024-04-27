@@ -1,54 +1,94 @@
 #include "get_handler.h"
 #include "json_response.h"
 
-namespace http_handler
-{
-    get_handler::get_handler(StringRequest&&request, model::Game& game, file::file_loader& root):
-    _req(request),wwwroot(root),game_(game)
+namespace http_handler {
+    get_handler::get_handler(StringRequest &&request, model::Game &game, file::file_loader &root):
+            default_handler(std::move(request)), wwwroot(root), game_(game) {}
+
+    std::variant <StringResponse, FileResponse>  get_handler::HandleMapRequest()
     {
+        if (isMapListReq())
+        {
+            return Maps();
+        }
+        if (isMapIdReq())
+        {
+            std::string map_id(_req.target().substr("/api/v1/maps/"sv.size()));
+            return Map(map_id);
+        }
+        return BadRequest();
     }
 
-    std::variant <StringResponse, FileResponse> get_handler::execute()
+    std::variant <StringResponse, FileResponse> get_handler::HandleGameRequest()
     {
-        auto target = _req.target();
-        if (target.starts_with("/api/"))
+        if (isGamePlayerListReq())
         {
-            if (target == "/api/v1/maps")
+            auto auth_str = _req[http::field::authorization];
+            if (auth_str == "" or auth_str.substr("Bearer"sv.size()) == "")
             {
-                return  HandleGetMaps();
+                return Unathorized();
             }
-            if (target.starts_with("/api/v1/maps/"))
-            {
-                std::string map_id ( target.substr("/api/v1/maps/"sv.size()));
-                return HandleGetMap(map_id);
-            }
-            return HandleBadRequest();
-        }
+            auto token = auth_str.substr("Bearer "sv.size());
 
-        target = target == "/" ? "index.html" : target.substr(1);
-        auto response_file =  wwwroot.try_get(target);
+            if(game_.FindPlayer(Token(std::string(token))))
+            {
+                return PlayerList();
+            }
+            return PLayerNotFound();
+        }
+        if (isJoinGameReq())
+        {
+            return NotAllowed("POST");
+        }
+    }
+
+    std::variant <StringResponse, FileResponse> get_handler::HandleFileRequest()
+    {
+        auto target = _req.target() == "/" ? "index.html" : _req.target().substr(1);
+        auto response_file = wwwroot.try_get(target);
         if (response_file)
         {
-            auto res  = std::move((*response_file));
+            auto res = std::move((*response_file));
             return res;
         }
         return HandleNotFound();
     }
 
-    StringResponse get_handler::MakeStringResponse(http::status status, std::string_view body, unsigned http_version,
-                                      bool keep_alive,
-                                      std::string_view content_type)
+
+    StringResponse get_handler::PLayerNotFound()
     {
-        StringResponse response(status, http_version);
-        response.set(http::field::content_type, content_type);
-        response.body() = body;
-        response.content_length(body.size());
-        response.keep_alive(keep_alive);
+        std::string  body = json_responce::ErrorJson("unknownToken","Player token has not been found");
+        const auto text_response = [this](http::status status, std::string_view text)
+        {
+            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
+        };
+        auto resp = text_response(http::status::unauthorized,body);
+        resp.set(http::field::cache_control,"no-cache");
+        return resp;
+    }
+    StringResponse get_handler::PlayerList()
+    {
+        std::string  body = json_responce::to_json(game_.GetPLayers());
+        const auto text_response = [this](http::status status, std::string_view text)
+        {
+            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
+        };
+        return text_response(http::status::ok,body);
+    }
+
+    StringResponse get_handler::Unathorized()
+    {
+
+        const auto text_response = [this](http::status status, std::string_view text)
+        {
+            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
+        };
+        auto response = text_response(http::status::unauthorized, json_responce::ErrorJson("invalidToken","Authorization header is missing"));
+        response.set(http::field::cache_control,"no-cache");
         return response;
     }
 
-
-    StringResponse get_handler::HandleGetMaps()
+    StringResponse get_handler::Maps()
     {
         auto maps =  game_.GetMaps();
         auto maps_json_str = json_responce::to_json(maps);
@@ -58,7 +98,7 @@ namespace http_handler
         };
         return text_response(http::status::ok,maps_json_str);
     }
-    StringResponse get_handler::HandleGetMap(const std::string& map_id)
+    StringResponse get_handler::Map(const std::string& map_id)
     {
         auto map  = game_.FindMap(model::Map::Id(map_id));
         const auto text_response = [this](http::status status, std::string_view text)
@@ -71,24 +111,47 @@ namespace http_handler
             std::string map_json = json_responce::to_json(*map);
             return text_response(http::status::ok,map_json);
         }
-        return text_response(http::status::not_found,json_responce::NotFoundJson());
+        return text_response(http::status::not_found,json_responce::ErrorJson("mapNotFound","Map not found"));
     }
 
     StringResponse get_handler::HandleNotFound()
     {
         const auto text_response = [this](http::status status, std::string_view text)
         {
-            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::TEXT_PLAIN);
+            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
         };
         return text_response(http::status::not_found,"ERROR 404 Not found");
     }
-    StringResponse get_handler::HandleBadRequest()
+    StringResponse get_handler::HandleNotAllowed()
     {
         const auto text_response = [this](http::status status, std::string_view text)
         {
             return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
         };
-        return text_response(http::status::bad_request,json_responce::BadRequestJson());
+        auto  resp =  text_response(http::status::method_not_allowed,json_responce::ErrorJson("invalidMethod","Only POST method is expected"));
+        resp.set(http::field::cache_control,"no-cache");
+        resp.set(http::field::allow,"POST");
+        return resp;
+    }
+    StringResponse get_handler::BadRequest()
+    {
+        const auto text_response = [this](http::status status, std::string_view text)
+        {
+            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
+        };
+        return text_response(http::status::bad_request,json_responce::ErrorJson("badRequest","Bad request"));
+    }
+
+    StringResponse get_handler::MakeStringResponse(http::status status, std::string_view body, unsigned http_version,
+                                                   bool keep_alive,
+                                                   std::string_view content_type)
+    {
+        StringResponse response(status, http_version);
+        response.set(http::field::content_type, content_type);
+        response.body() = body;
+        response.content_length(body.size());
+        response.keep_alive(keep_alive);
+        return response;
     }
 }
 

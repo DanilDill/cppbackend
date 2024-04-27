@@ -13,6 +13,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 add_compile_definitions(BOOST_BEAST_USE_STD_STRING_VIEW)
 add_executable(game_server
+	src/json_atribute.h
 	src/main.cpp
 	src/http_server.cpp
 	src/http_server.h
@@ -29,7 +30,16 @@ add_executable(game_server
 	src/json_response.cpp
 	src/staticfile_loader.cpp
 	src/staticfile_loader.h
-	src/content_type.h src/logging_request_handler.h src/get_handler.cpp src/get_handler.h src/post_handler.cpp src/post_handler.h src/Tokenizer.h)
+	src/content_type.h
+	src/logging_request_handler.h
+	src/get_handler.cpp
+	src/get_handler.h
+	src/post_handler.cpp
+	src/post_handler.h
+	src/Tokenizer.h
+	src/head_handler.cpp
+	src/head_handler.h
+		src/default_handler.h src/default_handler.cpp)
 
 target_include_directories(game_server PRIVATE CONAN_PKG::boost)
 target_link_libraries(game_server PRIVATE Threads::Threads CONAN_PKG::boost)

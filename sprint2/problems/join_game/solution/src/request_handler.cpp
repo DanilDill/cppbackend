@@ -19,24 +19,24 @@ namespace http_handler
     {
         const auto text_response = [&req, this](http::status status, std::string_view text)
         {
-            return MakeStringResponse(status, text, req.version(), req.keep_alive());
+            return MakeStringResponse(status, text, req.version(), req.keep_alive(),ContentType::APPLICATION_JSON);
         };
         return text_response(http::status::ok, ""sv);
     }
 
     StringResponse RequestHandler::HandleUnexpected(StringRequest&& req)
     {
+
         const auto text_response = [&req, this](http::status status, std::string_view text)
         {
-            return MakeStringResponse(status, text, req.version(), req.keep_alive());
+            return MakeStringResponse(status, text, req.version(), req.keep_alive(),ContentType::APPLICATION_JSON);
         };
-        return text_response(http::status::method_not_allowed,"Invalid method");
+        auto resp =  text_response(http::status::method_not_allowed,json_responce::ErrorJson("invalidMethod","Invalid method"));
+        resp.set(http::field::cache_control,"no-cache");
+        resp.set(http::field::allow,"POST");
+        return resp;
     }
 
-    StringResponse RequestHandler::HandlePost(StringRequest&& req)
-    {
-
-    }
 
 
 }  // namespace http_handler
