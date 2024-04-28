@@ -1,9 +1,9 @@
+
 #include "get_handler.h"
-#include "json_response.h"
 
 namespace http_handler {
     get_handler::get_handler(StringRequest &&request, model::Game &game, file::file_loader &root):
-            default_handler(std::move(request)), wwwroot(root), game_(game) {}
+            default_handler(std::forward<decltype(request)>(request)), wwwroot(root), game_(game) {}
 
     std::variant <StringResponse, FileResponse>  get_handler::HandleMapRequest()
     {
@@ -26,7 +26,7 @@ namespace http_handler {
             auto auth_str = _req[http::field::authorization];
             if (auth_str == "" or auth_str.substr("Bearer"sv.size()) == "")
             {
-                return Unathorized();
+                return Unauthorized(json_responce::ErrorJson("invalidToken","Authorization header is missing"));
             }
             auto token = auth_str.substr("Bearer "sv.size());
 
@@ -34,18 +34,19 @@ namespace http_handler {
             {
                 return PlayerList();
             }
-            return PLayerNotFound();
+            return Unauthorized(json_responce::ErrorJson("unknownToken","Player token has not been found"));
         }
         if (isJoinGameReq())
         {
-            return NotAllowed("POST");
+            return NotAllowed(json_responce::ErrorJson("invalidMethod","Only POST method is expected"), http::verb::post,http::verb::get);
         }
+        return BadRequest();
     }
 
     std::variant <StringResponse, FileResponse> get_handler::HandleFileRequest()
     {
         auto target = _req.target() == "/" ? "index.html" : _req.target().substr(1);
-        auto response_file = wwwroot.try_get(target);
+        auto response_file = wwwroot.try_get(target.data());
         if (response_file)
         {
             auto res = std::move((*response_file));
@@ -55,63 +56,33 @@ namespace http_handler {
     }
 
 
-    StringResponse get_handler::PLayerNotFound()
-    {
-        std::string  body = json_responce::ErrorJson("unknownToken","Player token has not been found");
-        const auto text_response = [this](http::status status, std::string_view text)
-        {
-            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
-        };
-        auto resp = text_response(http::status::unauthorized,body);
-        resp.set(http::field::cache_control,"no-cache");
-        return resp;
-    }
     StringResponse get_handler::PlayerList()
     {
         std::string  body = json_responce::to_json(game_.GetPLayers());
-        const auto text_response = [this](http::status status, std::string_view text)
-        {
-            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
-        };
-        return text_response(http::status::ok,body);
+        return Ok(body);
     }
 
-    StringResponse get_handler::Unathorized()
-    {
-
-        const auto text_response = [this](http::status status, std::string_view text)
-        {
-            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
-        };
-        auto response = text_response(http::status::unauthorized, json_responce::ErrorJson("invalidToken","Authorization header is missing"));
-        response.set(http::field::cache_control,"no-cache");
-        return response;
-    }
 
     StringResponse get_handler::Maps()
     {
         auto maps =  game_.GetMaps();
         auto maps_json_str = json_responce::to_json(maps);
-        const auto text_response = [this](http::status status, std::string_view text)
-        {
-            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
-        };
-        return text_response(http::status::ok,maps_json_str);
+        auto resp  = Ok(maps_json_str);
+        return resp;
     }
     StringResponse get_handler::Map(const std::string& map_id)
     {
         auto map  = game_.FindMap(model::Map::Id(map_id));
-        const auto text_response = [this](http::status status, std::string_view text)
-        {
-            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
-        };
-
         if (map)
         {
             std::string map_json = json_responce::to_json(*map);
-            return text_response(http::status::ok,map_json);
+            auto  resp =  Ok(map_json);
+            resp.keep_alive(_req.keep_alive());
+            return resp;
         }
-        return text_response(http::status::not_found,json_responce::ErrorJson("mapNotFound","Map not found"));
+        auto resp =  NotFound(json_responce::ErrorJson("mapNotFound","Map not found"));
+        resp.keep_alive(_req.keep_alive());
+        return resp;
     }
 
     StringResponse get_handler::HandleNotFound()
@@ -122,32 +93,14 @@ namespace http_handler {
         };
         return text_response(http::status::not_found,"ERROR 404 Not found");
     }
-    StringResponse get_handler::HandleNotAllowed()
-    {
-        const auto text_response = [this](http::status status, std::string_view text)
-        {
-            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
-        };
-        auto  resp =  text_response(http::status::method_not_allowed,json_responce::ErrorJson("invalidMethod","Only POST method is expected"));
-        resp.set(http::field::cache_control,"no-cache");
-        resp.set(http::field::allow,"POST");
-        return resp;
-    }
-    StringResponse get_handler::BadRequest()
-    {
-        const auto text_response = [this](http::status status, std::string_view text)
-        {
-            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
-        };
-        return text_response(http::status::bad_request,json_responce::ErrorJson("badRequest","Bad request"));
-    }
+
 
     StringResponse get_handler::MakeStringResponse(http::status status, std::string_view body, unsigned http_version,
                                                    bool keep_alive,
                                                    std::string_view content_type)
     {
         StringResponse response(status, http_version);
-        response.set(http::field::content_type, content_type);
+        response.set(http::field::content_type, content_type.data());
         response.body() = body;
         response.content_length(body.size());
         response.keep_alive(keep_alive);

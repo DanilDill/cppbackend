@@ -1,10 +1,10 @@
-#include <variant>
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include "content_type.h"
-#include "staticfile_loader.h"
-#include "model.h"
+#pragma once
+
 #include "default_handler.h"
+#include "staticfile_loader.h"
+#include <variant>
+#include "model.h"
+
 namespace http_handler
 {
     class get_handler: public default_handler
@@ -23,12 +23,9 @@ namespace http_handler
 
         StringResponse PlayerList();
         StringResponse Maps();
-        StringResponse Unathorized();
         StringResponse Map(const std::string& map_id);
         StringResponse HandleNotFound();
-        StringResponse BadRequest();
-        StringResponse PLayerNotFound();
-        StringResponse HandleNotAllowed();
+
     private:
        model::Game& game_;
        file::file_loader& wwwroot;

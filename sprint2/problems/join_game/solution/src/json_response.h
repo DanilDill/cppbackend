@@ -1,4 +1,5 @@
 #pragma once
+
 #include <string>
 #include "model.h"
 #include <boost/json.hpp>
@@ -13,12 +14,10 @@ namespace json_responce
         for (auto& player: players)
         {
             response_json[std::to_string(player.second.GetId())] = boost::json::value{{"name", player.second.GetName()}};
-            return boost::json::serialize(response_json);
+
         }
+        return boost::json::serialize(response_json);
     }
     std::string AuthTokenJson(const std::string& token_str, int id);
-
-    //std::string NotFoundJson();
-  //  std::string BadRequestJson();
     std::string ErrorJson(const std::string& code, const std::string& message);
 }

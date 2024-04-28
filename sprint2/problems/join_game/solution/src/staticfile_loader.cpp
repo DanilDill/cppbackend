@@ -1,4 +1,4 @@
-
+#define BOOST_BEAST_USE_STD_STRING_VIEW
 #include "staticfile_loader.h"
 #include "content_type.h"
 #include <boost/algorithm/string.hpp>

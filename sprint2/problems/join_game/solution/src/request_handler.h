@@ -1,27 +1,16 @@
 #pragma once
 #include <variant>
 #include "http_server.h"
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
+#include "get_handler.h"
+#include "head_handler.h"
+#include "post_handler.h"
 #include "model.h"
 #include "content_type.h"
 #include "staticfile_loader.h"
 
-#include "default_handler.h"
-#include "get_handler.h"
-#include "head_handler.h"
-#include "post_handler.h"
+
+
 namespace http_handler {
-
-namespace beast = boost::beast;
-namespace http = beast::http;
-using namespace std::literals;
-
-
-using StringResponse = http::response<http::string_body>;
-using FileResponse = http::response<http::file_body>;
-using StringRequest = http::request<http::string_body>;
-
 
 class RequestHandler {
 public:
@@ -42,7 +31,7 @@ public:
             case http::verb::post:
                 return post_handler (std::move(req), game_, wwwroot).execute();
             default:
-                return default_handler(std::move(req)).execute();//HandleUnexpected(std::move(req));
+                return default_handler(std::move(req)).execute();
 
         }
     }

@@ -1,12 +1,17 @@
+
 #pragma once
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include <string_view>
-#include <variant>
+
 #include "content_type.h"
+#include <variant>
 #include "json_response.h"
+#include "staticfile_loader.h"
+#include "json_response.h"
+#include <string_view>
+//#include <boost/beast/core.hpp>
+//#include <boost/beast/http.hpp>
 namespace http_handler
 {
+    using namespace std::literals;
     namespace beast = boost::beast;
     namespace http = beast::http;
     using StringResponse = http::response<http::string_body>;
@@ -39,7 +44,7 @@ namespace http_handler
         virtual std::variant <StringResponse, FileResponse> HandleGameRequest();
         virtual std::variant <StringResponse, FileResponse> HandleFileRequest();
     public:
-        default_handler(StringRequest&& request);
+        explicit default_handler(StringRequest&& request);
         bool isApiReq();
         bool isMapReq();
         bool isMapListReq();
@@ -47,7 +52,32 @@ namespace http_handler
         bool isGameRequest();
         bool isGamePlayerListReq();
         bool isJoinGameReq();
-        StringResponse NotAllowed(std::convertible_to<std::string_view>auto ... methods );
+
+        template<std::same_as<http::verb> ...T>
+        StringResponse NotAllowed(std::string_view  body, T&& ... methods )
+        {
+            const auto text_response = [this](http::status status, std::string_view text)
+            {
+                return MakeStringResponse(status, text, _req.version(),ContentType::APPLICATION_JSON);
+            };
+            auto  resp =  text_response(http::status::method_not_allowed, body);
+            resp.set(http::field::cache_control,"no-cache"sv.data());
+            for (const auto& method : std::initializer_list<http::verb>{ methods... })
+            {
+                resp.set(http::field::allow,http::to_string(method));
+            }
+            return resp;
+        }
+        template<std::same_as<http::verb> ...T>
+        StringResponse NotAllowed(T&& ... methods )
+        {
+           return NotAllowed("",std::move(methods...));
+        }
+        StringResponse BadRequest(std::string_view  errorMessage="");
+        StringResponse NotFound(std::string_view  body="");
+        StringResponse Unauthorized(std::string_view  body= "");
+        StringResponse Ok(std::string_view body="");
+
         std::variant <StringResponse, FileResponse> execute();
 
     };

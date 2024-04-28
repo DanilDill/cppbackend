@@ -1,24 +1,27 @@
+#define BOOST_BEAST_USE_STD_STRING_VIEW
 #include "default_handler.h"
+#include <iostream>
 namespace http_handler
 {
     StringResponse default_handler::MakeStringResponse(http::status status, std::string_view body, unsigned http_version,
                                   std::string_view content_type)
     {
-        StringResponse response(status, http_version);
-        response.set(http::field::content_type, content_type);
-        response.content_length(body.size());
-        response.set(http::field::cache_control,"no-cache");
-        response.body() = body;
-        return response;
+            StringResponse response(status,http_version);
+            response.set(http::field::content_type, content_type.data());
+            response.content_length(body.size());
+            response.set(http::to_string(http::field::cache_control),"no-cache");
+            response.body() = body;
+            return response;
     }
 
 
     default_handler::default_handler(StringRequest&& request):
-    _req(request){}
+    _req(std::forward<decltype(request)>(request)){}
 
     bool default_handler::isApiReq()
     {
-      _req.target().starts_with(RequestTargets::API_REQ);
+      auto target = _req.target();//.starts_with(RequestTargets::API_REQ);
+      std::string_view (target).starts_with(RequestTargets::API_REQ.data());
     }
     bool default_handler::isMapReq()
     {
@@ -48,41 +51,42 @@ namespace http_handler
     {
         return _req.target() == RequestTargets::GAME_JOIN;
     }
-    StringResponse default_handler::NotAllowed(std::convertible_to<std::string_view>auto ... methods )
+
+
+    StringResponse default_handler::Ok(std::string_view body)
     {
-         const auto text_response = [this](http::status status, std::string_view text)
+        const auto text_response = [this](http::status status, std::string_view text)
         {
             return MakeStringResponse(status, text, _req.version(),ContentType::APPLICATION_JSON);
         };
-        auto  resp =  text_response(http::status::method_not_allowed,json_responce::ErrorJson("invalidMethod","Invalid method"));
-        resp.set(http::field::cache_control,"no-cache");
-        for (const auto& method : std::initializer_list<std::string_view>{ methods... })
-        {
-             resp.set(http::field::allow,method);
-        }
+        auto resp =  text_response(http::status::ok,body);
         return resp;
+
     }
+
+
 
     std::variant <StringResponse, FileResponse> default_handler::HandleMapRequest()
     {
-        return  NotAllowed("GET","HEAD");
+        return  NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),http::verb::get,http::verb::head);
     }
 
     std::variant <StringResponse, FileResponse> default_handler::HandleGameRequest()
     {
         if (isGamePlayerListReq())
         {
-             return NotAllowed("GET","HEAD");
+             return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),http::verb::get,http::verb::head);
         }
         if (isJoinGameReq())
         {
-            return NotAllowed("POST");
+            return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), http::verb::post);
         }
+        return BadRequest();
     }
 
     std::variant <StringResponse, FileResponse> default_handler::HandleFileRequest()
     {
-        return NotAllowed("GET","HEAD");
+        return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),http::verb::get,http::verb::head);
     }
 
 
@@ -96,6 +100,40 @@ namespace http_handler
         {
             return HandleGameRequest();
         }
+        return BadRequest();
+    }
+
+    StringResponse default_handler::BadRequest(std::string_view errorMessage)
+    {
+        const auto text_response = [this](http::status status, std::string_view text)
+        {
+            return MakeStringResponse(status, text, _req.version(),ContentType::APPLICATION_JSON);
+        };
+        auto resp =  text_response(http::status::bad_request,errorMessage);
+        resp.set(http::field::cache_control,"no-cache");
+        return resp;
+    }
+
+    StringResponse default_handler::NotFound(std::string_view  body)
+    {
+        const auto text_response = [this](http::status status, std::string_view text)
+        {
+            return MakeStringResponse(status, text, _req.version(),ContentType::APPLICATION_JSON);
+        };
+        auto resp =  text_response(http::status::bad_request,body);
+        resp.set(http::field::cache_control,"no-cache");
+        return resp;
+    }
+
+    StringResponse default_handler::Unauthorized(std::string_view body)
+    {
+        const auto text_response = [this](http::status status, std::string_view text)
+        {
+            return MakeStringResponse(status, text, _req.version(),ContentType::APPLICATION_JSON);
+        };
+        auto resp = text_response(http::status::unauthorized,body);
+        resp.set(http::field::cache_control,"no-cache");
+        return resp;
     }
 
     std::variant <StringResponse, FileResponse> default_handler::execute()
