@@ -1,23 +1,18 @@
 #pragma once
 #include "sdk.h"
 //
-#define BOOST_BEAST_USE_STD_STRING_VIEW
+#include "beast.h"
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/strand.hpp>
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
 
+namespace sys = boost::system;
+namespace net = boost::asio;
+using tcp = net::ip::tcp;
 
 namespace http_server {
 
 // Разместите здесь реализацию http-сервера, взяв её из задания по разработке асинхронного сервера
-    namespace net = boost::asio;
-    using tcp = net::ip::tcp;
-    namespace beast = boost::beast;
-    namespace http = beast::http;
-    using namespace std::literals;
-    namespace sys = boost::system;
 
     void ReportError(beast::error_code ec, std::string_view what);
 

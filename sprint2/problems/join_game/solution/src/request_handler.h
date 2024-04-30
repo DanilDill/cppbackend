@@ -1,40 +1,35 @@
 #pragma once
 #include <variant>
-#include "http_server.h"
-#include "get_handler.h"
-#include "head_handler.h"
-#include "post_handler.h"
+//#include "http_server.h"
 #include "model.h"
 #include "content_type.h"
-#include "staticfile_loader.h"
+//#include "get_handler.h"
+#include "beast.h"
 
-
-
+namespace file
+{
+    class file_loader;
+}
 namespace http_handler {
 
-class RequestHandler {
+    using namespace std::literals;
+
+    using StringResponse = http::response<http::string_body>;
+    using FileResponse = http::response<http::file_body>;
+    using StringRequest = http::request<http::string_body>;
+
+
+
+
+    class RequestHandler {
 public:
     explicit RequestHandler(model::Game& game, file::file_loader& root)
         : game_{game}, wwwroot{root}
         {}
     RequestHandler(const RequestHandler&) = delete;
     RequestHandler& operator=(const RequestHandler&) = delete;
-    std::variant<StringResponse,FileResponse> HandleRequest(StringRequest&& req)
-    {
+    std::variant<StringResponse,FileResponse> HandleRequest(StringRequest&& req);
 
-        switch (req.method())
-        {
-            case http::verb::get:
-                return get_handler(std::move(req),game_,wwwroot).execute();
-            case http::verb::head:
-                return head_handler(std::move(req), game_, wwwroot).execute();
-            case http::verb::post:
-                return post_handler (std::move(req), game_, wwwroot).execute();
-            default:
-                return default_handler(std::move(req)).execute();
-
-        }
-    }
 
 
 

@@ -1,5 +1,6 @@
 
 #include "get_handler.h"
+#include "staticfile_loader.h"
 
 namespace http_handler {
     get_handler::get_handler(StringRequest &&request, model::Game &game, file::file_loader &root):
@@ -68,6 +69,7 @@ namespace http_handler {
         auto maps =  game_.GetMaps();
         auto maps_json_str = json_responce::to_json(maps);
         auto resp  = Ok(maps_json_str);
+
         return resp;
     }
     StringResponse get_handler::Map(const std::string& map_id)

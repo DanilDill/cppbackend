@@ -1,4 +1,6 @@
 #pragma once
+
+#include "staticfile_loader.h"
 #include "default_handler.h"
 #include "model.h"
 #include "Tokenizer.h"

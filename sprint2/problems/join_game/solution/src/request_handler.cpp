@@ -1,6 +1,10 @@
 
 #include "request_handler.h"
 #include "json_response.h"
+#include "get_handler.h"
+#include "head_handler.h"
+#include "post_handler.h"
+
 namespace http_handler
 {
     StringResponse RequestHandler::MakeStringResponse(http::status status, std::string_view body, unsigned http_version,
@@ -14,6 +18,25 @@ namespace http_handler
         response.keep_alive(keep_alive);
         return response;
     }
+
+    std::variant<StringResponse,FileResponse> RequestHandler::HandleRequest(StringRequest&& req)
+    {
+
+        switch (req.method())
+        {
+            case http::verb::get:
+                return get_handler(std::move(req),game_,wwwroot).execute();
+            case http::verb::head:
+                return head_handler(std::move(req), game_, wwwroot).execute();
+            case http::verb::post:
+                return post_handler (std::move(req), game_, wwwroot).execute();
+            default:
+                return default_handler(std::move(req)).execute();
+
+        }
+    }
+
+
 
     StringResponse RequestHandler::HandleHead(StringRequest&& req)
     {

@@ -1,36 +1,19 @@
 
 #pragma once
-
-#include "content_type.h"
 #include <variant>
+#include "beast.h"
+#include "content_type.h"
 #include "json_response.h"
-#include "staticfile_loader.h"
 #include "json_response.h"
-#include <string_view>
-//#include <boost/beast/core.hpp>
-//#include <boost/beast/http.hpp>
+
+
 namespace http_handler
 {
     using namespace std::literals;
-    namespace beast = boost::beast;
-    namespace http = beast::http;
+
     using StringResponse = http::response<http::string_body>;
     using FileResponse = http::response<http::file_body>;
     using StringRequest = http::request<http::string_body>;
-
-    struct RequestTargets
-    {
-        RequestTargets()=delete;
-        static constexpr std::string_view API_REQ = "/api/";
-        static constexpr std::string_view MAP_REQ = "/api/v1/maps";
-        static constexpr std::string_view MAP_ID_REQ = "/api/v1/maps/";
-        static constexpr std::string_view GAME_REQ = "/api/v1/game/";
-        static constexpr std::string_view GAME_PLAYERS_REQ = "/api/v1/game/players";
-        static constexpr std::string_view GAME_JOIN = "/api/v1/game/join";
-
-    };
-
-
 
     class default_handler
     {

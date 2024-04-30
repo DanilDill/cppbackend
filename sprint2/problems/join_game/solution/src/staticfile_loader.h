@@ -1,8 +1,8 @@
 #pragma once
 #include <filesystem>
 #include <optional>
-#define BOOST_BEAST_USE_STD_STRING_VIEW
-#include <boost/beast.hpp>
+#include "beast.h"
+
 namespace file
 {
     using namespace std::literals;

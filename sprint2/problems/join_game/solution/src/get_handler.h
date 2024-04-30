@@ -1,12 +1,17 @@
 #pragma once
-
 #include "default_handler.h"
-#include "staticfile_loader.h"
-#include <variant>
+
+
 #include "model.h"
+
+namespace file
+{
+    class file_loader;
+}
 
 namespace http_handler
 {
+
     class get_handler: public default_handler
     {
     public:

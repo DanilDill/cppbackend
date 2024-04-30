@@ -4,7 +4,7 @@
 #include <boost/asio/io_context.hpp>
 #include <iostream>
 #include <thread>
-
+#include "http_server.h"
 #include "json_loader.h"
 #include "request_handler.h"
 #include "logging_request_handler.h"

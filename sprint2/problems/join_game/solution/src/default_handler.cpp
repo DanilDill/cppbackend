@@ -1,27 +1,30 @@
-#define BOOST_BEAST_USE_STD_STRING_VIEW
+
 #include "default_handler.h"
+#include "requests.h"
+#include <exception>
 #include <iostream>
 namespace http_handler
 {
-    StringResponse default_handler::MakeStringResponse(http::status status, std::string_view body, unsigned http_version,
-                                  std::string_view content_type)
+    StringResponse default_handler::MakeStringResponse(http::status status, beast::string_view body, unsigned http_version,
+                                  beast::string_view content_type)
     {
+
             StringResponse response(status,http_version);
-            response.set(http::field::content_type, content_type.data());
+            response.set(http::field::content_type, content_type);
             response.content_length(body.size());
-            response.set(http::to_string(http::field::cache_control),"no-cache");
+            response.set(http::field::cache_control,"no-cache");
             response.body() = body;
             return response;
-    }
 
+
+    }
 
     default_handler::default_handler(StringRequest&& request):
     _req(std::forward<decltype(request)>(request)){}
 
     bool default_handler::isApiReq()
     {
-      auto target = _req.target();//.starts_with(RequestTargets::API_REQ);
-      std::string_view (target).starts_with(RequestTargets::API_REQ.data());
+        return  _req.target().starts_with(RequestTargets::API_REQ);
     }
     bool default_handler::isMapReq()
     {
