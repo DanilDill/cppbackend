@@ -45,10 +45,14 @@ namespace http_handler
             };
             auto  resp =  text_response(http::status::method_not_allowed, body);
             resp.set(http::field::cache_control,"no-cache"sv.data());
+            std::stringstream  ss;
             for (const auto& method : std::initializer_list<http::verb>{ methods... })
             {
-                resp.set(http::field::allow,http::to_string(method));
+                ss << http::to_string(method) <<','<<' ';
+
             }
+            auto value = ss.view().substr(0,ss.view().length()-2);
+            resp.set(http::field::allow,value);
             return resp;
         }
         template<std::same_as<http::verb> ...T>

@@ -39,7 +39,7 @@ namespace http_handler {
         }
         if (isJoinGameReq())
         {
-            return NotAllowed(json_responce::ErrorJson("invalidMethod","Only POST method is expected"), http::verb::post,http::verb::get);
+            return NotAllowed(json_responce::ErrorJson("invalidMethod","Only POST method is expected"), http::verb::post);
         }
         return BadRequest();
     }

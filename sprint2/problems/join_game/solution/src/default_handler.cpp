@@ -123,7 +123,7 @@ namespace http_handler
         {
             return MakeStringResponse(status, text, _req.version(),ContentType::APPLICATION_JSON);
         };
-        auto resp =  text_response(http::status::bad_request,body);
+        auto resp =  text_response(http::status::not_found,body);
         resp.set(http::field::cache_control,"no-cache");
         return resp;
     }
