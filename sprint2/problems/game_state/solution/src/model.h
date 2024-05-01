@@ -30,6 +30,14 @@ struct Offset {
     Dimension dx, dy;
 };
 
+enum class Direction
+{
+    NORTH,
+    SOUTH,
+    WEST,
+    EAST
+};
+
 class Road {
     struct HorizontalTag {
         explicit HorizontalTag() = default;
@@ -172,7 +180,10 @@ private:
 
 class Dog
 {
-    //Todo
+private:
+    Point _coord;
+    float _speed = 0.0;
+    Direction _direction = Direction::NORTH;
 };
 class Player
 {
