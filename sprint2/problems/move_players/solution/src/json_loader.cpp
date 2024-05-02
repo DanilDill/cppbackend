@@ -72,7 +72,7 @@ namespace json_loader
         }
         return offices_vec;
     }
-    model::Map serialize_map(const boost::json::value &map_json)
+    model::Map serialize_map(const boost::json::value &map_json, double speed)
 {
     using attributes = JsonAttribute::MapArrayAttributes::MapAttributes;
     Id id_ = Id(std::string(map_json.at(attributes::ATTR_ID).as_string()));
@@ -97,6 +97,17 @@ namespace json_loader
     {
         map.AddOffice(office);
     }
+
+    if (auto iter = map_json.as_object().find(JsonAttribute::MapArrayAttributes::MapAttributes::DOG_SPEED);
+        iter != map_json.as_object().end())
+    {
+        map.setDogSpeed(iter->value().as_double());
+    }
+    else
+    {
+        map.setDogSpeed(speed);
+    }
+
     return map;
 }
 
@@ -117,10 +128,19 @@ model::Game LoadGame(const std::filesystem::path& json_path)
     }
 
     auto json_data = boost::json::parse(jsonStr);
+
+
+    double dogspeed  = 1.0;
+    if (auto  iter = json_data.as_object().find(JsonAttribute::DOG_SPEED_DEFAULT); iter != json_data.as_object().end()  )
+    {
+        dogspeed = iter->value().as_double();
+    }
+    game.SetDefaultDogSpeed(dogspeed);
+
     auto maps = json_data.as_object().at(JsonAttribute::MapArrayAttributes::NAME).as_array();
     for (auto& map_json : maps)
     {
-        auto map = serialize_map(map_json);
+        auto map = serialize_map(map_json,game.GetDefaultDogSpeed());
         game.AddMap(map);
     }
     return game;

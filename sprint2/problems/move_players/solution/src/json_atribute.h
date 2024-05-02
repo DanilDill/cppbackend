@@ -42,11 +42,13 @@ struct JsonAttribute
             MapAttributes()=delete;
             constexpr static const std::string_view ATTR_ID = "id";
             constexpr static const std::string_view ATTR_NAME = "name";
+            constexpr static const std::string_view DOG_SPEED = "dogSpeed";
             constexpr static const std::string_view ATTR_ROADS = JsonAttribute::RoadArrayAttributes::NAME;
             constexpr static const std::string_view ATTR_BUILDINGS = JsonAttribute::BuildArrayAttributes::NAME;
             constexpr static const std::string_view ATTR_OFFICES = JsonAttribute::OfficeArrayAttributes::NAME;
         };
     };
+    constexpr static const std::string_view DOG_SPEED_DEFAULT = "defaultDogSpeed";
 
     struct ResponseAtrrubutes
     {

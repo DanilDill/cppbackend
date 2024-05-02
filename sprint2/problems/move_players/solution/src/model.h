@@ -171,6 +171,9 @@ public:
 
     void AddOffice(Office office);
 
+    void setDogSpeed(double speed);
+    double getDogSpeed()const;
+
 private:
     using OfficeIdToIndex = std::unordered_map<Office::Id, size_t, util::TaggedHasher<Office::Id>>;
 
@@ -178,9 +181,9 @@ private:
     std::string name_;
     Roads roads_;
     Buildings buildings_;
-
     OfficeIdToIndex warehouse_id_to_index_;
     Offices offices_;
+    double dogspeed;
 };
 
 struct Dog
@@ -200,9 +203,11 @@ private:
     std::shared_ptr<Dog> _dog= std::make_shared<Dog>();
 public:
     Player():_map_id(""){};
-    Player(int id,const std::string& name,const Map::Id& map_id):
-    _name(name),_map_id(map_id),_id(id)
-    {};
+    Player(int id,const std::string& name,const Map& map):
+    _name(name),_map_id(map.GetId()),_id(id)
+    {
+        _dog->_speed = map.getDogSpeed();
+    };
 
     std::shared_ptr<Dog> GetDog() const
     {
@@ -228,46 +233,21 @@ public:
     using Maps = std::vector<Map>;
     using PlayerHasher = util::TaggedHasher<Token>;
     using Players = std::unordered_map<Token,Player,PlayerHasher>;
-    void AddMap(Map map);
-    int AddPlayer(Token t, const std::string& player_name, const Map::Id& id)
-    {
-        auto size = players.size();
-        players[t] = Player(size,player_name,id);
-        return players[t].GetId();
-    };
-    const Maps& GetMaps() const noexcept {
-        return maps_;
-    }
-    std::optional<Player> FindPlayer(Token t) const
-    {
-         auto player = players.find(t);
-        if (player != players.end())
-        {
-            return player->second;
-        }
-        return std::nullopt;
-    }
-
-    const Players& GetPLayers()
-    {
-        return players;
-    }
-
-    const Map* FindMap(const Map::Id& id) const noexcept {
-        if (auto it = map_id_to_index_.find(id); it != map_id_to_index_.end()) {
-            return &maps_.at(it->second);
-        }
-        return nullptr;
-    }
-
-private:
     using MapIdHasher = util::TaggedHasher<Map::Id>;
-
     using MapIdToIndex = std::unordered_map<Map::Id, size_t, MapIdHasher>;
-
+    void SetDefaultDogSpeed(double speed);
+    double GetDefaultDogSpeed()const;
+    void AddMap(Map map);
+    int AddPlayer(Token t, const std::string& player_name, const Map::Id& id);
+    const Maps& GetMaps() const noexcept;
+    std::optional<Player> FindPlayer(Token t) const;
+    const Players& GetPLayers();
+    const Map* FindMap(const Map::Id& id) const noexcept;
+private:
     Players players;
     std::vector<Map> maps_;
     MapIdToIndex map_id_to_index_;
+    double default_dogspeed;
 };
 
 }  // namespace model
