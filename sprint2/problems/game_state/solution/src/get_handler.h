@@ -27,6 +27,7 @@ namespace http_handler
                                           std::string_view content_type = ContentType::TEXT_HTML);
 
         StringResponse PlayerList();
+        StringResponse PlayerState();
         StringResponse Maps();
         StringResponse Map(const std::string& map_id);
         StringResponse HandleNotFound();

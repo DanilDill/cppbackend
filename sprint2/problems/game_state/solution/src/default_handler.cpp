@@ -55,6 +55,10 @@ namespace http_handler
         return _req.target() == RequestTargets::GAME_JOIN;
     }
 
+    bool default_handler::isGameStateReq()
+    {
+        return _req.target() == RequestTargets::GAME_STATE;
+    }
 
     StringResponse default_handler::Ok(std::string_view body)
     {
@@ -67,29 +71,31 @@ namespace http_handler
 
     }
 
-
-
     std::variant <StringResponse, FileResponse> default_handler::HandleMapRequest()
     {
-        return  NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),http::verb::get,http::verb::head);
+        return  NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), request_right[RequestTargets::MAP_REQ]);
     }
 
     std::variant <StringResponse, FileResponse> default_handler::HandleGameRequest()
     {
         if (isGamePlayerListReq())
         {
-             return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),http::verb::get,http::verb::head);
+             return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),request_right[RequestTargets::GAME_PLAYERS_REQ]);
         }
         if (isJoinGameReq())
         {
-            return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), http::verb::post);
+            return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), request_right[RequestTargets::GAME_JOIN]);
+        }
+        if (isGameStateReq())
+        {
+            return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), request_right[RequestTargets::GAME_STATE]);
         }
         return BadRequest();
     }
 
     std::variant <StringResponse, FileResponse> default_handler::HandleFileRequest()
     {
-        return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),http::verb::get,http::verb::head);
+        return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),"GET, HEAD");
     }
 
 

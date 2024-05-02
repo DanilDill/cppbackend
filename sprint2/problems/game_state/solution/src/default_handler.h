@@ -5,7 +5,7 @@
 #include "content_type.h"
 #include "json_response.h"
 #include "json_response.h"
-
+#include "requests.h"
 
 namespace http_handler
 {
@@ -35,9 +35,9 @@ namespace http_handler
         bool isGameRequest();
         bool isGamePlayerListReq();
         bool isJoinGameReq();
+        bool isGameStateReq();
 
-        template<std::same_as<http::verb> ...T>
-        StringResponse NotAllowed(std::string_view  body, T&& ... methods )
+        StringResponse NotAllowed(std::string_view  body, std::string_view methods )
         {
             const auto text_response = [this](http::status status, std::string_view text)
             {
@@ -45,20 +45,12 @@ namespace http_handler
             };
             auto  resp =  text_response(http::status::method_not_allowed, body);
             resp.set(http::field::cache_control,"no-cache"sv.data());
-            std::stringstream  ss;
-            for (const auto& method : std::initializer_list<http::verb>{ methods... })
-            {
-                ss << http::to_string(method) <<','<<' ';
-
-            }
-            auto value = ss.view().substr(0,ss.view().length()-2);
-            resp.set(http::field::allow,value);
+            resp.set(http::field::allow,methods);
             return resp;
         }
-        template<std::same_as<http::verb> ...T>
-        StringResponse NotAllowed(T&& ... methods )
+        StringResponse NotAllowed(std::string_view methods)
         {
-           return NotAllowed("",std::move(methods...));
+           return NotAllowed("",methods);
         }
         StringResponse BadRequest(std::string_view  errorMessage="");
         StringResponse NotFound(std::string_view  body="");

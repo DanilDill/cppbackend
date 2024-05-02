@@ -45,7 +45,11 @@ namespace http_handler
             }
             if (isJoinGameReq())
             {
-                return NotAllowed(http::verb::post);
+                return NotAllowed(request_right[RequestTargets::GAME_JOIN]);
+            }
+            if (isGameStateReq())
+            {
+
             }
             return BadRequest();
         }
@@ -66,7 +70,6 @@ namespace http_handler
             auto map  = game_.FindMap(model::Map::Id(map_id));
             if (map)
             {
-                //std::string map_json = json_responce::to_json(*map);
                 return Ok();
             }
             return NotFound();

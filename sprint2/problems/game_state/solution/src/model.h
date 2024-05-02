@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 #include <atomic>
+#include <memory>
 #include <optional>
 #include "Tokenizer.h"
 #include "tagged.h"
@@ -12,11 +13,14 @@ namespace model {
 
 using Dimension = int;
 using Coord = Dimension;
-
+using Coordf = float;
 struct Point {
     Coord x, y;
 };
-
+struct Pointf
+{
+   Coordf x, y;
+};
 struct Size {
     Dimension width, height;
 };
@@ -30,14 +34,15 @@ struct Offset {
     Dimension dx, dy;
 };
 
-enum class Direction
+enum  Direction
 {
-    NORTH,
+    NORTH ,
     SOUTH,
-    WEST,
+    WEST ,
     EAST
 };
 
+std::string to_string(Direction direction);
 class Road {
     struct HorizontalTag {
         explicit HorizontalTag() = default;
@@ -178,12 +183,13 @@ private:
     Offices offices_;
 };
 
-class Dog
+struct Dog
 {
-private:
-    Point _coord;
+
+    Pointf _coord;
     float _speed = 0.0;
     Direction _direction = Direction::NORTH;
+    Dog()=default;
 };
 class Player
 {
@@ -191,12 +197,18 @@ private:
     int _id;
     Map::Id _map_id;
     std::string _name;
-    Dog* dog= nullptr;
+    std::shared_ptr<Dog> _dog= std::make_shared<Dog>();
 public:
     Player():_map_id(""){};
     Player(int id,const std::string& name,const Map::Id& map_id):
     _name(name),_map_id(map_id),_id(id)
     {};
+
+    std::shared_ptr<Dog> GetDog() const
+    {
+        return _dog;
+    }
+
 
     const int GetId() const
    {
@@ -226,7 +238,7 @@ public:
     const Maps& GetMaps() const noexcept {
         return maps_;
     }
-    std::optional<Player> FindPlayer(Token t)
+    std::optional<Player> FindPlayer(Token t) const
     {
          auto player = players.find(t);
         if (player != players.end())

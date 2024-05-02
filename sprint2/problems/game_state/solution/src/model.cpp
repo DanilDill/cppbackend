@@ -35,4 +35,20 @@ void Game::AddMap(Map map) {
     }
 }
 
+    std::string to_string(Direction direction)
+    {
+        switch (direction)
+        {
+            case Direction::NORTH:
+                return "U";
+            case Direction::SOUTH:
+                return "D";
+            case Direction::WEST:
+                return "L";
+            case Direction::EAST:
+                return "R";
+        }
+    }
+
+
 }  // namespace model

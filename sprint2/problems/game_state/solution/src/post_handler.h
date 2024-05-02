@@ -18,16 +18,12 @@ namespace http_handler
 
     protected:
       //  virtual std::variant <StringResponse, FileResponse> HandleApiRequest();
-        virtual std::variant <StringResponse, FileResponse> HandleMapRequest()
-        {
-            return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),http::verb::get,http::verb::head);
-        }
 
         virtual std::variant <StringResponse, FileResponse> HandleGameRequest()
         {
             if (isGamePlayerListReq())
             {
-                return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),http::verb::get,http::verb::head);
+                return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),request_right[RequestTargets::GAME_PLAYERS_REQ]);
             }
             if (isJoinGameReq())
             {
@@ -54,12 +50,12 @@ namespace http_handler
                 auto  id =  game_.AddPlayer(token,gamer.first,model::Map::Id(gamer.second));
                 return  Ok(json_responce::AuthTokenJson(*token,id));
             }
+            if (isGameStateReq())
+            {
+                return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), request_right[RequestTargets::GAME_STATE]);
+            }
             return BadRequest(json_responce::ErrorJson("invalidArgument","invalidRequest"));
         }
-        virtual std::variant <StringResponse, FileResponse> HandleFileRequest()
-        {
-          return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),http::verb::get, http::verb::head);
-        };
     private:
         model::Game& game_;
         file::file_loader& wwwroot;

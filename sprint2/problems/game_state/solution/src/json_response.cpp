@@ -103,4 +103,21 @@ namespace json_responce
         map_json[attr::ATTR_OFFICES] = to_json(map.GetOffices());
         return boost::json::serialize(map_json);
     }
+
+    boost::json::object to_json_obj(const model::Dog& dog)
+    {
+        boost::json::object response_json;
+        boost::json::array pos;
+        pos.emplace_back(dog._coord.x);
+        pos.emplace_back(dog._coord.y);
+
+        boost::json::array speed;
+        speed.emplace_back(0.0);
+        speed.emplace_back(0.0);
+
+        response_json["pos"] = pos;
+        response_json["speed"] = speed;
+        response_json["dir"] = to_string(dog._direction);
+        return response_json;
+    }
 }

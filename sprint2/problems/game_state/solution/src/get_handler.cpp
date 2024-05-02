@@ -1,7 +1,7 @@
 
 #include "get_handler.h"
 #include "staticfile_loader.h"
-
+#include "authorization_checker.h"
 namespace http_handler {
     get_handler::get_handler(StringRequest &&request, model::Game &game, file::file_loader &root):
             default_handler(std::forward<decltype(request)>(request)), wwwroot(root), game_(game) {}
@@ -24,22 +24,32 @@ namespace http_handler {
     {
         if (isGamePlayerListReq())
         {
-            auto auth_str = _req[http::field::authorization];
-            if (auth_str == "" or auth_str.substr("Bearer"sv.size()) == "")
+            auto auth_check = AuthorizationChecker(_req,game_).check();
+            if (auth_check)
             {
-                return Unauthorized(json_responce::ErrorJson("invalidToken","Authorization header is missing"));
+                return Unauthorized(*auth_check);
             }
-            auto token = auth_str.substr("Bearer "sv.size());
-
-            if(game_.FindPlayer(Token(std::string(token))))
+            else
             {
                 return PlayerList();
             }
-            return Unauthorized(json_responce::ErrorJson("unknownToken","Player token has not been found"));
         }
         if (isJoinGameReq())
         {
-            return NotAllowed(json_responce::ErrorJson("invalidMethod","Only POST method is expected"), http::verb::post);
+            return NotAllowed(json_responce::ErrorJson("invalidMethod","Only POST method is expected"),request_right[RequestTargets::GAME_JOIN]);
+        }
+
+        if (isGameStateReq())
+        {
+            auto auth_check = AuthorizationChecker(_req,game_).check();
+            if (auth_check)
+            {
+                return Unauthorized(*auth_check);
+            }
+             else
+            {
+                return PlayerState();
+            }
         }
         return BadRequest();
     }
@@ -63,6 +73,11 @@ namespace http_handler {
         return Ok(body);
     }
 
+    StringResponse get_handler::PlayerState()
+    {
+        std::string  body = json_responce::to_json(game_.GetPLayers(), true);
+        return Ok(body);
+    }
 
     StringResponse get_handler::Maps()
     {
