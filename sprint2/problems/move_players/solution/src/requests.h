@@ -12,6 +12,8 @@ struct RequestTargets
     static constexpr std::string_view GAME_PLAYERS_REQ = "/api/v1/game/players";
     static constexpr std::string_view GAME_JOIN = "/api/v1/game/join";
     static constexpr std::string_view GAME_STATE = "/api/v1/game/state";
+    static constexpr std::string_view GAME_ACTION = "/api/v1/game/player/action";
+
 
 };
 
@@ -21,5 +23,6 @@ static std::unordered_map<std::string_view,std::string_view> request_right
         { RequestTargets::MAP_ID_REQ,"GET, HEAD"sv },
         { RequestTargets::GAME_PLAYERS_REQ,"GET, HEAD"sv },
         { RequestTargets::GAME_JOIN,"POST" },
-        { RequestTargets::GAME_STATE, "GET, HEAD"sv}
+        { RequestTargets::GAME_STATE, "GET, HEAD"sv},
+        { RequestTargets::GAME_ACTION,"POST"}
 };

@@ -72,7 +72,7 @@ namespace json_loader
         }
         return offices_vec;
     }
-    model::Map serialize_map(const boost::json::value &map_json, double speed)
+    model::Map serialize_map(const boost::json::value &map_json, double speed, boost::asio::io_context& ioContext)
 {
     using attributes = JsonAttribute::MapArrayAttributes::MapAttributes;
     Id id_ = Id(std::string(map_json.at(attributes::ATTR_ID).as_string()));
@@ -80,7 +80,7 @@ namespace json_loader
     Roads roads_ =  serializeRoads(map_json);
     Buildings  buildings_ = serializeBuildings(map_json);
     Offices  offices = serializeOffices(map_json);
-    model::Map map(id_,map_name);
+    model::Map map(id_,map_name,ioContext);
 
     for (const auto& road : roads_)
     {
@@ -111,9 +111,9 @@ namespace json_loader
     return map;
 }
 
-model::Game LoadGame(const std::filesystem::path& json_path)
+model::Game LoadGame(const std::filesystem::path& json_path, boost::asio::io_context& ioc)
 {
-    model::Game game;
+    model::Game game(ioc);
     // Открываем файл с JSON данными
     std::ifstream file(json_path);
     if (!file.is_open())
@@ -140,7 +140,7 @@ model::Game LoadGame(const std::filesystem::path& json_path)
     auto maps = json_data.as_object().at(JsonAttribute::MapArrayAttributes::NAME).as_array();
     for (auto& map_json : maps)
     {
-        auto map = serialize_map(map_json,game.GetDefaultDogSpeed());
+        auto map = serialize_map(map_json,game.GetDefaultDogSpeed(),ioc);
         game.AddMap(map);
     }
     return game;

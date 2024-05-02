@@ -6,53 +6,42 @@ namespace http_handler {
     get_handler::get_handler(StringRequest &&request, model::Game &game, file::file_loader &root):
             default_handler(std::forward<decltype(request)>(request)), wwwroot(root), game_(game) {}
 
-    std::variant <StringResponse, FileResponse>  get_handler::HandleMapRequest()
+    std::variant <StringResponse, FileResponse> get_handler::HandleMapsList()
     {
-        if (isMapListReq())
-        {
-            return Maps();
-        }
-        if (isMapIdReq())
-        {
-            std::string map_id(_req.target().substr("/api/v1/maps/"sv.size()));
-            return Map(map_id);
-        }
-        return BadRequest();
+        return Maps();
+    }
+    std::variant <StringResponse, FileResponse> get_handler::HandleMapId()
+    {
+        std::string map_id(_req.target().substr("/api/v1/maps/"sv.size()));
+        return Map(map_id);
     }
 
-    std::variant <StringResponse, FileResponse> get_handler::HandleGameRequest()
+    std::variant <StringResponse, FileResponse> get_handler::HandlePlayerList()
     {
-        if (isGamePlayerListReq())
+        auto auth_check = AuthorizationChecker(_req,game_).check();
+        if (auth_check)
         {
-            auto auth_check = AuthorizationChecker(_req,game_).check();
-            if (auth_check)
-            {
-                return Unauthorized(*auth_check);
-            }
-            else
-            {
-                return PlayerList();
-            }
+            return Unauthorized(*auth_check);
         }
-        if (isJoinGameReq())
+        else
         {
-            return NotAllowed(json_responce::ErrorJson("invalidMethod","Only POST method is expected"),request_right[RequestTargets::GAME_JOIN]);
+            return PlayerList();
         }
-
-        if (isGameStateReq())
-        {
-            auto auth_check = AuthorizationChecker(_req,game_).check();
-            if (auth_check)
-            {
-                return Unauthorized(*auth_check);
-            }
-             else
-            {
-                return PlayerState();
-            }
-        }
-        return BadRequest();
     }
+
+    std::variant <StringResponse, FileResponse> get_handler::HandleGameState()
+    {
+        auto auth_check = AuthorizationChecker(_req,game_).check();
+        if (auth_check)
+        {
+            return Unauthorized(*auth_check);
+        }
+        else
+        {
+            return PlayerState();
+        }
+    }
+
 
     std::variant <StringResponse, FileResponse> get_handler::HandleFileRequest()
     {
@@ -106,7 +95,7 @@ namespace http_handler {
     {
         const auto text_response = [this](http::status status, std::string_view text)
         {
-            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::APPLICATION_JSON);
+            return MakeStringResponse(status, text, _req.version(), _req.keep_alive(),ContentType::TEXT_PLAIN);
         };
         return text_response(http::status::not_found,"ERROR 404 Not found");
     }

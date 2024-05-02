@@ -38,14 +38,14 @@ int main(int argc, const char* argv[])
     }
     try {
         // 1. Загружаем карту из файла и построить модель игры
-        model::Game game = json_loader::LoadGame(argv[1]);
+        const unsigned num_threads = std::thread::hardware_concurrency();
+        net::io_context ioc(num_threads);
+        model::Game game = json_loader::LoadGame(argv[1],ioc);
         file::file_loader wwwroot(argv[2]);
      // Создаём обработчик HTTP-запросов и связываем его с моделью игры
         http_handler::RequestHandler handler{game,wwwroot};
         LoggingRequestHandler<http_handler::RequestHandler> log_handler{handler};
-        // 2. Инициализируем io_context
-        const unsigned num_threads = std::thread::hardware_concurrency();
-        net::io_context ioc(num_threads);
+
         net::signal_set signals(ioc, SIGINT, SIGTERM);
         signals.async_wait([&ioc,&log_handler](const boost::system::error_code& ec, [[maybe_unused]] int signal_number) {
             if (!ec) {

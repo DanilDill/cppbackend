@@ -18,21 +18,25 @@ namespace http_handler
         get_handler(StringRequest&&request, model::Game& game, file::file_loader& root);
 
     protected:
-        virtual std::variant <StringResponse, FileResponse> HandleMapRequest()override;
-        virtual std::variant <StringResponse, FileResponse> HandleGameRequest()override;
+        virtual std::variant <StringResponse, FileResponse> HandleMapsList()override;
+        virtual std::variant <StringResponse, FileResponse> HandleMapId()override;
+        virtual std::variant <StringResponse, FileResponse> HandlePlayerList()override;
+        virtual std::variant <StringResponse, FileResponse> HandleGameState()override;
         virtual std::variant <StringResponse, FileResponse> HandleFileRequest()override;
-    private:
+
+        virtual StringResponse PlayerList();
+        virtual StringResponse PlayerState();
+        virtual StringResponse Maps();
+        virtual StringResponse Map(const std::string& map_id);
+        virtual StringResponse HandleNotFound();
+
+    protected:
         StringResponse MakeStringResponse(http::status status, std::string_view body, unsigned http_version,
                                           bool keep_alive,
                                           std::string_view content_type = ContentType::TEXT_HTML);
 
-        StringResponse PlayerList();
-        StringResponse PlayerState();
-        StringResponse Maps();
-        StringResponse Map(const std::string& map_id);
-        StringResponse HandleNotFound();
 
-    private:
+    protected:
        model::Game& game_;
        file::file_loader& wwwroot;
     };

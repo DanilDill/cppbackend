@@ -12,6 +12,7 @@ namespace http_handler
         std::regex _regex; //("Bearer [a-z,A-Z,0-9]{32}");
         const StringRequest&  _req;
         const model::Game& _game_ref;
+        Token lastToken = Token ("");
     public:
        explicit AuthorizationChecker(const StringRequest& request, const model::Game& game):
         _req(request),_game_ref(game),_regex("Bearer [a-z,A-Z,0-9]{32}"){};
@@ -21,8 +22,8 @@ namespace http_handler
             auto auth_str = _req[http::field::authorization];
             if (std::regex_search(std::string(auth_str), _regex))
             {
-                auto token = auth_str.substr("Bearer "sv.size());
-                if(_game_ref.FindPlayer(Token(std::string(token))))
+                lastToken = Token(std::string(auth_str.substr("Bearer "sv.size())));
+                if(_game_ref.FindPlayer(lastToken))
                 {
                     return std::nullopt;
                 }
@@ -33,5 +34,9 @@ namespace http_handler
                 return json_responce::ErrorJson("invalidToken","Authorization header is required");
             }
         };
+        Token getLastToken()
+        {
+            return lastToken;
+        }
     };
 }

@@ -9,6 +9,8 @@
 #include "Tokenizer.h"
 #include "tagged.h"
 
+#include <boost/asio.hpp>
+
 namespace model {
 
 using Dimension = int;
@@ -39,10 +41,12 @@ enum  Direction
     NORTH ,
     SOUTH,
     WEST ,
-    EAST
+    EAST,
+    STOP,
+    UNKNOWN
 };
-
 std::string to_string(Direction direction);
+Direction to_direction(const std::string&);
 class Road {
     struct HorizontalTag {
         explicit HorizontalTag() = default;
@@ -136,9 +140,10 @@ public:
     using Buildings = std::vector<Building>;
     using Offices = std::vector<Office>;
 
-    Map(Id id, std::string name) noexcept
+    Map(Id id, std::string name,boost::asio::io_context&ioContext) noexcept
         : id_(std::move(id))
-        , name_(std::move(name)) {
+        , name_(std::move(name)),
+        _strand(boost::asio::make_strand(ioContext)){
     }
 
     const Id& GetId() const noexcept {
@@ -173,10 +178,13 @@ public:
 
     void setDogSpeed(double speed);
     double getDogSpeed()const;
-
+    boost::asio::strand<boost::asio::io_context::executor_type>& getStrand()
+    {
+        return _strand;
+    }
 private:
     using OfficeIdToIndex = std::unordered_map<Office::Id, size_t, util::TaggedHasher<Office::Id>>;
-
+    boost::asio::strand<boost::asio::io_context::executor_type> _strand;
     Id id_;
     std::string name_;
     Roads roads_;
@@ -185,12 +193,16 @@ private:
     Offices offices_;
     double dogspeed;
 };
-
+struct DogSpeed
+{
+    double x;
+    double y;
+};
 struct Dog
 {
 
     Pointf _coord;
-    float _speed = 0.0;
+    DogSpeed _speed = {0.0,0.0};
     Direction _direction = Direction::NORTH;
     Dog()=default;
 };
@@ -206,14 +218,16 @@ public:
     Player(int id,const std::string& name,const Map& map):
     _name(name),_map_id(map.GetId()),_id(id)
     {
-        _dog->_speed = map.getDogSpeed();
     };
 
     std::shared_ptr<Dog> GetDog() const
     {
         return _dog;
     }
-
+    Map::Id GetMapId()
+    {
+        return _map_id;
+    }
 
     const int GetId() const
    {
@@ -235,6 +249,7 @@ public:
     using Players = std::unordered_map<Token,Player,PlayerHasher>;
     using MapIdHasher = util::TaggedHasher<Map::Id>;
     using MapIdToIndex = std::unordered_map<Map::Id, size_t, MapIdHasher>;
+    Game(boost::asio::io_context& context): ioc(context){};
     void SetDefaultDogSpeed(double speed);
     double GetDefaultDogSpeed()const;
     void AddMap(Map map);
@@ -243,7 +258,36 @@ public:
     std::optional<Player> FindPlayer(Token t) const;
     const Players& GetPLayers();
     const Map* FindMap(const Map::Id& id) const noexcept;
+    void Move(Token t, Direction direction)
+    {
+
+        if (auto it = map_id_to_index_.find( FindPlayer(t)->GetMapId()); it != map_id_to_index_.end())
+        {
+            boost::asio::post(maps_.at(it->second).getStrand(),[this,t,direction,speed = maps_.at(it->second).getDogSpeed()]()
+            {
+                switch (direction)
+                {
+                    case Direction::NORTH:
+                        players[t].GetDog()->_speed = {0, speed*(-1)};
+                        break;
+                    case Direction::SOUTH:
+                        players[t].GetDog()->_speed = {0, speed};
+                        break;
+                    case Direction::WEST:
+                        players[t].GetDog()->_speed = {speed*(-1), 0};
+                        break;
+                    case Direction::EAST:
+                        players[t].GetDog()->_speed = {speed, 0};
+                        break;
+                    case Direction::STOP:
+                        players[t].GetDog()->_speed = {0, 0};
+                        break;
+                }
+            });
+        }
+    }
 private:
+    boost::asio::io_context& ioc;
     Players players;
     std::vector<Map> maps_;
     MapIdToIndex map_id_to_index_;

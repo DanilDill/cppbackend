@@ -26,6 +26,16 @@ namespace http_handler
         virtual std::variant <StringResponse, FileResponse> HandleMapRequest();
         virtual std::variant <StringResponse, FileResponse> HandleGameRequest();
         virtual std::variant <StringResponse, FileResponse> HandleFileRequest();
+
+
+        virtual std::variant <StringResponse, FileResponse> HandleMapsList();
+        virtual std::variant <StringResponse, FileResponse> HandleMapId();
+        virtual std::variant <StringResponse, FileResponse> HandlePlayerList();
+        virtual std::variant <StringResponse, FileResponse> HandleJoinGame();
+        virtual std::variant <StringResponse, FileResponse> HandleGameState();
+        virtual std::variant <StringResponse, FileResponse> HandlePlayerAction();
+
+
     public:
         explicit default_handler(StringRequest&& request);
         bool isApiReq();
@@ -36,6 +46,7 @@ namespace http_handler
         bool isGamePlayerListReq();
         bool isJoinGameReq();
         bool isGameStateReq();
+        bool isGameAction();
 
         StringResponse NotAllowed(std::string_view  body, std::string_view methods )
         {
@@ -52,10 +63,10 @@ namespace http_handler
         {
            return NotAllowed("",methods);
         }
-        StringResponse BadRequest(std::string_view  errorMessage="");
-        StringResponse NotFound(std::string_view  body="");
-        StringResponse Unauthorized(std::string_view  body= "");
-        StringResponse Ok(std::string_view body="");
+        virtual StringResponse BadRequest(std::string_view  errorMessage="");
+        virtual StringResponse NotFound(std::string_view  body="");
+        virtual StringResponse Unauthorized(std::string_view  body= "");
+        virtual StringResponse Ok(std::string_view body="");
 
         std::variant <StringResponse, FileResponse> execute();
 
