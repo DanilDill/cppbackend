@@ -2,7 +2,7 @@
 #include "staticfile_loader.h"
 #include "default_handler.h"
 #include "model.h"
-
+#include "authorization_checker.h"
 
 namespace http_handler
 {
@@ -30,18 +30,15 @@ namespace http_handler
         {
             if (isGamePlayerListReq())
             {
-                auto auth_str = _req[http::field::authorization];
-                if (auth_str == "" or auth_str.substr("Bearer"sv.size()) == "")
+                auto auth_check = AuthorizationChecker(_req,game_).check();
+                if (auth_check)
                 {
                     return Unauthorized();
                 }
-                auto token = auth_str.substr("Bearer "sv.size());
-
-                if(game_.FindPlayer(Token(std::string(token))))
+                else
                 {
                     return Ok();
                 }
-                return Unauthorized();
             }
             if (isJoinGameReq())
             {
@@ -49,7 +46,15 @@ namespace http_handler
             }
             if (isGameStateReq())
             {
-
+                auto auth_check = AuthorizationChecker(_req,game_).check();
+                if (auth_check)
+                {
+                    return Unauthorized();
+                }
+                else
+                {
+                    return Ok();
+                }
             }
             return BadRequest();
         }
