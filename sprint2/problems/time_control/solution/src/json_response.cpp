@@ -6,15 +6,15 @@ namespace json_responce
 {
     using respAttr = JsonAttribute::ResponseAtrrubutes;
 
-    std::string to_json(const std::vector<model::Map>& maps)
+    std::string to_json(const std::vector<std::shared_ptr<model::Map>>& maps)
     {
         using attr = JsonAttribute::MapArrayAttributes::MapAttributes;
         boost::json::array maps_json;
         for (const auto& map : maps)
         {
             boost::json::object object;
-            object[attr::ATTR_ID] = *map.GetId();
-            object[attr::ATTR_NAME] = map.GetName();
+            object[attr::ATTR_ID] = *(map->GetId());
+            object[attr::ATTR_NAME] = map->GetName();
             maps_json.emplace_back(object);
         }
         return boost::json::serialize(maps_json);

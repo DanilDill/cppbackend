@@ -21,6 +21,8 @@ void Map::AddOffice(Office office) {
     }
 }
 
+
+
 void Map::setDogSpeed(double speed)
 {
     dogspeed = speed;
@@ -36,7 +38,7 @@ void Game::AddMap(Map map) {
         throw std::invalid_argument("Map with id "s + *map.GetId() + " already exists"s);
     } else {
         try {
-            maps_.emplace_back(std::move(map));
+            maps_.emplace_back(std::make_shared<Map>(std::move(map)));
         } catch (...) {
             map_id_to_index_.erase(it);
             throw;
@@ -47,7 +49,7 @@ void Game::AddMap(Map map) {
 int Game::AddPlayer(Token t, const std::string& player_name, const Map::Id& id)
     {
         auto size = players.size();
-        players[t] = Player(size,player_name,*FindMap(id));
+        players[t] = Player(size,player_name,FindMap(id));
         return players[t].GetId();
     }
 
@@ -70,10 +72,10 @@ const Game::Players& Game::GetPLayers()
     return players;
 }
 
-    const Map* Game::FindMap(const Map::Id& id) const noexcept
+    const std::shared_ptr<Map> Game::FindMap(const Map::Id& id) const noexcept
     {
         if (auto it = map_id_to_index_.find(id); it != map_id_to_index_.end()) {
-            return &maps_.at(it->second);
+            return maps_.at(it->second);
         }
         return nullptr;
     }
@@ -132,4 +134,11 @@ Direction to_direction(const std::string& string)
     return Direction::UNKNOWN;
 }
 
+void Game::Tick(size_t ms)
+{
+    for (auto player: players)
+    {
+        player.second.move(ms);
+    }
+}
 }  // namespace model

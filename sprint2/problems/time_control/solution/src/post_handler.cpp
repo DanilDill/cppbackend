@@ -86,4 +86,26 @@ namespace http_handler
         return  Ok(json_responce::AuthTokenJson(*token,id));
     }
 
+    std::variant <StringResponse, FileResponse> post_handler::HandleGameTick()
+    {
+        if (_req.body().empty())
+        {
+            return BadRequest(json_responce::ErrorJson("invalidArgument","Failed to parse tick request JSON"));
+        }
+        auto json_data =  boost::json::parse(_req.body().data());
+        size_t tick_ms;
+        if (auto tick_iter = json_data.as_object().find("timeDelta"); tick_iter != json_data.as_object().end() && tick_iter->value().is_int64())
+        {
+            tick_ms = tick_iter->value().as_int64();
+            game_.Tick(tick_ms);
+            return Ok("{}");
+        }
+        else
+        {
+            return BadRequest(json_responce::ErrorJson("invalidArgument","Failed to parse tick request JSON"));
+        }
+
+    }
+
+
 }

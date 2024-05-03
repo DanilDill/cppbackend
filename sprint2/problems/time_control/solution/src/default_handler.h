@@ -34,6 +34,7 @@ namespace http_handler
         virtual std::variant <StringResponse, FileResponse> HandleJoinGame();
         virtual std::variant <StringResponse, FileResponse> HandleGameState();
         virtual std::variant <StringResponse, FileResponse> HandlePlayerAction();
+        virtual std::variant <StringResponse, FileResponse> HandleGameTick();
 
 
     public:
@@ -47,22 +48,10 @@ namespace http_handler
         bool isJoinGameReq();
         bool isGameStateReq();
         bool isGameAction();
+        bool isGameTick();
 
-        StringResponse NotAllowed(std::string_view  body, std::string_view methods )
-        {
-            const auto text_response = [this](http::status status, std::string_view text)
-            {
-                return MakeStringResponse(status, text, _req.version(),ContentType::APPLICATION_JSON);
-            };
-            auto  resp =  text_response(http::status::method_not_allowed, body);
-            resp.set(http::field::cache_control,"no-cache"sv.data());
-            resp.set(http::field::allow,methods);
-            return resp;
-        }
-        StringResponse NotAllowed(std::string_view methods)
-        {
-           return NotAllowed("",methods);
-        }
+        StringResponse NotAllowed(std::string_view  body, std::string_view methods );
+        StringResponse NotAllowed(std::string_view methods);
         virtual StringResponse BadRequest(std::string_view  errorMessage="");
         virtual StringResponse NotFound(std::string_view  body="");
         virtual StringResponse Unauthorized(std::string_view  body= "");

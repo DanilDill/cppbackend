@@ -17,9 +17,8 @@ namespace http_handler
 
     protected:
         virtual std::variant <StringResponse, FileResponse> HandleJoinGame()override;
-
         virtual std::variant <StringResponse, FileResponse> HandlePlayerAction()override;
-
+        virtual std::variant <StringResponse, FileResponse> HandleGameTick()override;
     private:
         model::Game& game_;
         file::file_loader& wwwroot;

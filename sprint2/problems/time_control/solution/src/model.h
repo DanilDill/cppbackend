@@ -210,23 +210,29 @@ class Player
 {
 private:
     int _id;
-    Map::Id _map_id;
+    std::shared_ptr<Map> _map;
     std::string _name;
     std::shared_ptr<Dog> _dog= std::make_shared<Dog>();
 public:
-    Player():_map_id(""){};
-    Player(int id,const std::string& name,const Map& map):
-    _name(name),_map_id(map.GetId()),_id(id)
+    Player(){};
+    Player(int id,const std::string& name, std::shared_ptr<Map> map):
+    _name(name),_map(map),_id(id)
     {
     };
+    void  move(size_t ms)
+    {
+        _map->GetRoads();
+        _dog->_coord.x += _dog->_speed.x * (static_cast<double>(ms) / 1000);
+        _dog->_coord.y += _dog->_speed.y * (static_cast<double>(ms) / 1000);
 
+    }
     std::shared_ptr<Dog> GetDog() const
     {
         return _dog;
     }
     Map::Id GetMapId()
     {
-        return _map_id;
+        return _map->GetId();
     }
 
     const int GetId() const
@@ -244,12 +250,13 @@ public:
 
 class Game {
 public:
-    using Maps = std::vector<Map>;
+    using Maps = std::vector<std::shared_ptr<Map>>;
     using PlayerHasher = util::TaggedHasher<Token>;
     using Players = std::unordered_map<Token,Player,PlayerHasher>;
     using MapIdHasher = util::TaggedHasher<Map::Id>;
     using MapIdToIndex = std::unordered_map<Map::Id, size_t, MapIdHasher>;
     Game(boost::asio::io_context& context): ioc(context){};
+    void Tick(size_t ms);
     void SetDefaultDogSpeed(double speed);
     double GetDefaultDogSpeed()const;
     void AddMap(Map map);
@@ -257,13 +264,13 @@ public:
     const Maps& GetMaps() const noexcept;
     std::optional<Player> FindPlayer(Token t) const;
     const Players& GetPLayers();
-    const Map* FindMap(const Map::Id& id) const noexcept;
+    const std::shared_ptr<Map> FindMap(const Map::Id& id) const noexcept;
     void Move(Token t, Direction direction)
     {
 
         if (auto it = map_id_to_index_.find( FindPlayer(t)->GetMapId()); it != map_id_to_index_.end())
         {
-            boost::asio::post(maps_.at(it->second).getStrand(),[this,t,direction,speed = maps_.at(it->second).getDogSpeed()]()
+            boost::asio::post(maps_.at(it->second)->getStrand(),[this,t,direction,speed = maps_.at(it->second)->getDogSpeed()]()
             {
                 switch (direction)
                 {
@@ -289,7 +296,7 @@ public:
 private:
     boost::asio::io_context& ioc;
     Players players;
-    std::vector<Map> maps_;
+    Maps maps_;
     MapIdToIndex map_id_to_index_;
     double default_dogspeed;
 };

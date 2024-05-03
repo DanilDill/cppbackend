@@ -60,6 +60,11 @@ namespace http_handler
         return _req.target() == RequestTargets::GAME_STATE;
     }
 
+    bool default_handler::isGameTick()
+    {
+        return _req.target() == RequestTargets::GAME_TICK;
+    }
+
     StringResponse default_handler::Ok(std::string_view body)
     {
         const auto text_response = [this](http::status status, std::string_view text)
@@ -108,12 +113,21 @@ namespace http_handler
         {
             return HandlePlayerAction();
         }
+        if (isGameTick())
+        {
+            return HandleGameTick();
+        }
 
         return BadRequest();
     }
 
+     std::variant <StringResponse, FileResponse> default_handler::HandleGameTick()
+    {
+        return  NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), request_right[RequestTargets::GAME_TICK]);
+    }
 
-     std::variant <StringResponse, FileResponse> default_handler::HandleMapsList()
+
+    std::variant <StringResponse, FileResponse> default_handler::HandleMapsList()
      {
          return  NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), request_right[RequestTargets::MAP_REQ]);
      }
@@ -203,6 +217,23 @@ namespace http_handler
             return HandleApiRequest();
         }
         return HandleFileRequest();
+    }
+
+
+    StringResponse default_handler::NotAllowed(std::string_view  body, std::string_view methods )
+    {
+        const auto text_response = [this](http::status status, std::string_view text)
+        {
+            return MakeStringResponse(status, text, _req.version(),ContentType::APPLICATION_JSON);
+        };
+        auto  resp =  text_response(http::status::method_not_allowed, body);
+        resp.set(http::field::cache_control,"no-cache"sv.data());
+        resp.set(http::field::allow,methods);
+        return resp;
+    }
+    StringResponse default_handler::NotAllowed(std::string_view methods)
+    {
+        return NotAllowed("",methods);
     }
 
 };

@@ -5,7 +5,7 @@
 #include <boost/json.hpp>
 namespace json_responce
 {
-    std::string to_json(const std::vector<model::Map>& maps);
+    std::string to_json(const std::vector<std::shared_ptr<model::Map>>& maps);
     std::string to_json(const model::Map& map);
     boost::json::object to_json_obj(const model::Dog& dog);
 
