@@ -175,7 +175,8 @@ private:
 
 class Map {
 public:
-    using Id = util::Tagged<std::string, Map>;
+    using
+    Id = util::Tagged<std::string, Map>;
     using Roads = std::vector<Road>;
     using Buildings = std::vector<Building>;
     using Offices = std::vector<Office>;
@@ -271,9 +272,9 @@ public:
         if (new_position)
         {
             _dog->_coord = *new_position;
-            if (new_position->x !=  estimated_position.x && new_position->y != estimated_position.y)
+            if (new_position->x !=  estimated_position.x || new_position->y != estimated_position.y)
             {
-                _dog->_direction = Direction::STOP;
+             //   _dog->_direction = Direction::STOP;
                 _dog->_speed = {0.0,0.0};
             }
         }
