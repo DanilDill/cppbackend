@@ -15,14 +15,21 @@ namespace model {
 
 using Dimension = int;
 using Coord = Dimension;
-using Coordf = float;
+using Coordf = double;
 struct Point {
     Coord x, y;
 };
 struct Pointf
 {
    Coordf x, y;
+    bool operator<=(const Pointf& other) const{ return x <= other.x and y<= other.y;};
+    static double  measure_distance(const Pointf& first, const Pointf second)
+    {
+        double squared_distance = pow(second.x - first.x, 2) + pow(second.y - first.y, 2);
+        return sqrt(squared_distance);
+    }
 };
+
 struct Size {
     Dimension width, height;
 };
@@ -62,14 +69,21 @@ public:
 
     Road(HorizontalTag, Point start, Coord end_x) noexcept
         : start_{start}
-        , end_{end_x, start.y} {
-    }
+        , end_{end_x, start.y}
+        {
+            makeCorners();
+        }
 
     Road(VerticalTag, Point start, Coord end_y) noexcept
         : start_{start}
-        , end_{start.x, end_y} {
+        , end_{start.x, end_y}
+        {
+            makeCorners();
+        }
+    bool IsOnTheRoad(Pointf point)
+    {
+        return left_bottom_corner <= point and point <= right_top_corner;
     }
-
     bool IsHorizontal() const noexcept {
         return start_.y == end_.y;
     }
@@ -85,8 +99,34 @@ public:
     Point GetEnd() const noexcept {
         return end_;
     }
+    Pointf bound_to_the_road(Pointf point)
+    {
+        double new_x = bound(left_bottom_corner.x, right_top_corner.x, point.x);
+        double new_y = bound(left_bottom_corner.y, right_top_corner.y, point.y);
+        return Pointf{new_x, new_y};
+    }
+    double bound(double bound_1, double bound_2,double value)
+    {
+        double lower = std::min(bound_1, bound_2);
+        double upper = std::max(bound_1, bound_2);
 
+        double result = std::min(upper, value);
+        result = std::max(lower, result);
+        return result;
+    }
 private:
+    void makeCorners()
+    {
+        double left_bottom_x = std::min(start_.x,end_.x) - width;
+        double left_bottom_y = std::min(start_.y, end_.y) - width;
+        double right_top_x = std::max(start_.x, end_.x) + width;
+        double right_top_y = std::max(start_.y, end_.y) + width;
+        left_bottom_corner = {left_bottom_x, left_bottom_y};
+        right_top_corner = {right_top_x, right_top_y};
+    }
+    Pointf left_bottom_corner;
+    Pointf right_top_corner;
+    double width = 0.4;
     Point start_;
     Point end_;
 };
@@ -221,11 +261,86 @@ public:
     };
     void  move(size_t ms)
     {
-        _map->GetRoads();
-        _dog->_coord.x += _dog->_speed.x * (static_cast<double>(ms) / 1000);
-        _dog->_coord.y += _dog->_speed.y * (static_cast<double>(ms) / 1000);
 
+        Pointf estimated_position = {
+                _dog->_coord.x + _dog->_speed.x * (static_cast<double>(ms) / 1000),
+                _dog->_coord.y + _dog->_speed.y * (static_cast<double>(ms) / 1000)
+        };
+
+        auto new_position = bounded_move(estimated_position);
+        if (new_position)
+        {
+            _dog->_coord = *new_position;
+            if (new_position->x !=  estimated_position.x && new_position->y != estimated_position.y)
+            {
+                _dog->_direction = Direction::STOP;
+                _dog->_speed = {0.0,0.0};
+            }
+        }
     }
+    std::optional<Pointf> bounded_move(Pointf pointf)
+    {
+        std::vector<Road> lst;
+        for (auto road : _map->GetRoads())
+        {
+            if (road.IsOnTheRoad(_dog->_coord))
+            {
+                lst.emplace_back(std::move(road));
+            }
+        }
+        if (lst.size() == 0)
+        {
+            return std::nullopt;
+        }
+        Pointf most_far = lst[0].bound_to_the_road(pointf);
+        if (lst.size() == 1)
+        {
+            return most_far;
+        }
+        double max_distance = Pointf::measure_distance(_dog->_coord, most_far);
+        for (int i = 1 ; i < lst.size();++i)
+        {
+            Pointf pretender = lst[i].bound_to_the_road(pointf);
+            double distanse = Pointf::measure_distance(_dog->_coord,pretender);
+            if (distanse > max_distance)
+            {
+                most_far = pretender;
+                max_distance = distanse;
+            }
+        }
+        return most_far;
+    }
+
+    void SetSpeed(Direction direction)
+    {
+        boost::asio::post(_map->getStrand(),[dog = _dog, speed = _map->getDogSpeed(),direction]()
+        {
+            switch (direction)
+            {
+                case Direction::NORTH:
+                    dog->_speed = {0, speed*(-1)};
+                    dog->_direction = Direction::NORTH;
+                    break;
+                case Direction::SOUTH:
+                    dog->_speed = {0, speed};
+                    dog->_direction = Direction::SOUTH;
+                    break;
+                case Direction::WEST:
+                    dog->_speed = {speed*(-1), 0.0};
+                    dog->_direction = Direction::WEST;
+                    break;
+                case Direction::EAST:
+                    dog->_speed = {speed, 0.0};
+                    dog->_direction = Direction::EAST;
+                    break;
+                case Direction::STOP:
+                    dog->_speed = {0.0, 0.0};
+                    dog->_direction = Direction::STOP;
+                    break;
+            }
+        });
+    }
+
     std::shared_ptr<Dog> GetDog() const
     {
         return _dog;
@@ -265,33 +380,9 @@ public:
     std::optional<Player> FindPlayer(Token t) const;
     const Players& GetPLayers();
     const std::shared_ptr<Map> FindMap(const Map::Id& id) const noexcept;
-    void Move(Token t, Direction direction)
+    void SetDirection(Token t, Direction direction)
     {
-
-        if (auto it = map_id_to_index_.find( FindPlayer(t)->GetMapId()); it != map_id_to_index_.end())
-        {
-            boost::asio::post(maps_.at(it->second)->getStrand(),[this,t,direction,speed = maps_.at(it->second)->getDogSpeed()]()
-            {
-                switch (direction)
-                {
-                    case Direction::NORTH:
-                        players[t].GetDog()->_speed = {0, speed*(-1)};
-                        break;
-                    case Direction::SOUTH:
-                        players[t].GetDog()->_speed = {0, speed};
-                        break;
-                    case Direction::WEST:
-                        players[t].GetDog()->_speed = {speed*(-1), 0};
-                        break;
-                    case Direction::EAST:
-                        players[t].GetDog()->_speed = {speed, 0};
-                        break;
-                    case Direction::STOP:
-                        players[t].GetDog()->_speed = {0, 0};
-                        break;
-                }
-            });
-        }
+        FindPlayer(t)->SetSpeed(direction);
     }
 private:
     boost::asio::io_context& ioc;

@@ -53,7 +53,7 @@ namespace http_handler
                 return BadRequest(json_responce::ErrorJson("invalidArgument","Failed to parse action"));
             }
             auto  token = checker.getLastToken();
-            game_.Move(token,direction);
+            game_.SetDirection(token, direction);
             return Ok("{}");
         }
         return BadRequest(json_responce::ErrorJson("invalidArgument","Failed to parse action"));

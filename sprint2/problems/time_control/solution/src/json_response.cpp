@@ -112,8 +112,8 @@ namespace json_responce
         pos.emplace_back(dog._coord.y);
 
         boost::json::array speed;
-        speed.emplace_back(0.0);
-        speed.emplace_back(0.0);
+        speed.emplace_back(dog._speed.x);
+        speed.emplace_back(dog._speed.y);
 
         response_json["pos"] = pos;
         response_json["speed"] = speed;
