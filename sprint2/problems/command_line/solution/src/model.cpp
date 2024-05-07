@@ -50,6 +50,10 @@ int Game::AddPlayer(Token t, const std::string& player_name, const Map::Id& id)
     {
         auto size = players.size();
         players[t] = Player(size,player_name,FindMap(id));
+        if (randomized_coord)
+        {
+            players[t].SetRandomized();
+        }
         return players[t].GetId();
     }
 
@@ -134,7 +138,7 @@ Direction to_direction(const std::string& string)
     return Direction::UNKNOWN;
 }
 
-void Game::Tick(size_t ms)
+void Game::Tick(std::chrono::milliseconds  ms)
 {
     for (auto player: players)
     {

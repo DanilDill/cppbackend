@@ -1,12 +1,11 @@
 #include "sdk.h"
 //
-//#include <boost/program_options.hpp>
 #include <boost/program_options.hpp>
-#include <fstream>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/io_context.hpp>
 #include <iostream>
 #include <thread>
+
 #include "http_server.h"
 #include "json_loader.h"
 #include "request_handler.h"
@@ -17,13 +16,13 @@ namespace net = boost::asio;
 struct Args {
     std::string config_file;
     std::string wwwroot;
-    std::optional<size_t> tick_period;
+    size_t tick_period;
     bool randomize_spawn_points;
 };
 
 [[nodiscard]] std::optional<Args> ParseCommandLine(int argc, const char* const argv[])
 {
-    namespace po = boost::program_options;
+   namespace po = boost::program_options;
     po::options_description desc{"All options"s};
     Args args;
     desc.add_options()
@@ -32,25 +31,27 @@ struct Args {
     ("www-root,w",po::value(&args.wwwroot)->value_name("dir"),"set static files root")
     ("tick-period,t",po::value(&args.tick_period)->value_name("milliseconds"s),"set tick period")
     ("randomize-spawn-points", po::value(&args.randomize_spawn_points),"spawn dogs at random positions ");
+     po::variables_map vm;
+     po::store(po::parse_command_line(argc, argv, desc), vm);
+     po::notify(vm);
 
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-    po::notify(vm);
-
-    if (vm.contains("help"s)) {
-        // Если был указан параметр --help, то выводим справку и возвращаем nullopt
-        std::cout << desc;
-        return std::nullopt;
-    }
-    if (!vm.contains("config-file"))
-    {
-        throw std::runtime_error("config file was not found");
-    }
-    if (!vm.contains("www-root"))
-    {
-        throw std::runtime_error("wwwroot not specified");
-    }
-    return args;
+     if (vm.contains("help"s)) {
+         // Если был указан параметр --help, то выводим справку и возвращаем nullopt
+         std::cout << desc;
+         return std::nullopt;
+     }
+     if (!vm.contains("config-file"))
+     {
+         throw std::runtime_error("config file was not found");
+     }
+     if (!vm.contains("www-root"))
+     {
+         throw std::runtime_error("wwwroot not specified");
+     }
+     args.randomize_spawn_points = vm.contains("randomize-spawn-points") ? true : false;
+     args.tick_period = vm.contains("tick-period") ? args.tick_period  : 0;
+     return args;
+  //  return std::nullopt;
 }
 
 
@@ -79,8 +80,18 @@ int main(int argc, const char* argv[])
             // 1. Загружаем карту из файла и построить модель игры
             const unsigned num_threads = std::thread::hardware_concurrency();
             net::io_context ioc(num_threads);
-            model::Game game = json_loader::LoadGame(argv[1],ioc);
-            file::file_loader wwwroot(argv[2]);
+            model::Game game = json_loader::LoadGame(args->config_file,ioc);
+            file::file_loader wwwroot(args->wwwroot);
+
+            if (args->tick_period != 0)
+            {
+               game.SetTicker(std::chrono::milliseconds(args->tick_period));
+            }
+
+            if (args->randomize_spawn_points)
+            {
+                game.SetRandomizedCoord();
+            }
             // Создаём обработчик HTTP-запросов и связываем его с моделью игры
             http_handler::RequestHandler handler{game,wwwroot};
             LoggingRequestHandler<http_handler::RequestHandler> log_handler{handler};

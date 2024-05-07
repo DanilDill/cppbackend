@@ -8,7 +8,7 @@
 #include <optional>
 #include "Tokenizer.h"
 #include "tagged.h"
-
+#include "ticker.h"
 #include <boost/asio.hpp>
 
 namespace model {
@@ -260,12 +260,12 @@ public:
     _name(name),_map(map),_id(id)
     {
     };
-    void  move(size_t ms)
+    void  move(std::chrono::milliseconds ms)
     {
 
         Pointf estimated_position = {
-                _dog->_coord.x + _dog->_speed.x * (static_cast<double>(ms) / 1000),
-                _dog->_coord.y + _dog->_speed.y * (static_cast<double>(ms) / 1000)
+                _dog->_coord.x + _dog->_speed.x * std::chrono::duration<double>(ms).count(),
+                _dog->_coord.y + _dog->_speed.y * std::chrono::duration<double>(ms).count()
         };
 
         auto new_position = bounded_move(estimated_position);
@@ -342,6 +342,14 @@ public:
         });
     }
 
+    void SetRandomized()
+    {
+        auto roads  = _map->GetRoads();
+        size_t n  = roads.size() - 1 ;
+        size_t road_num  = std::rand() % n;
+        _dog->_coord = { static_cast<double>(roads[road_num].GetStart().x), static_cast<double>(roads[road_num].GetStart().y)};
+
+    }
     std::shared_ptr<Dog> GetDog() const
     {
         return _dog;
@@ -372,7 +380,22 @@ public:
     using MapIdHasher = util::TaggedHasher<Map::Id>;
     using MapIdToIndex = std::unordered_map<Map::Id, size_t, MapIdHasher>;
     Game(boost::asio::io_context& context): ioc(context){};
-    void Tick(size_t ms);
+    void SetRandomizedCoord()
+    {
+        randomized_coord = true;
+    }
+    void Tick(std::chrono::milliseconds  ms);
+    bool hasTicker()
+    {
+        return ticker == nullptr ? false : true;
+    }
+    void SetTicker(std::chrono::milliseconds ms )
+    {
+        auto api_strand = net::make_strand(ioc);
+        ticker = std::make_shared<Ticker>(api_strand,ms,
+                                          [this](std::chrono::milliseconds delta) { Tick(delta);});
+        ticker->Start();
+    }
     void SetDefaultDogSpeed(double speed);
     double GetDefaultDogSpeed()const;
     void AddMap(Map map);
@@ -386,6 +409,8 @@ public:
         FindPlayer(t)->SetSpeed(direction);
     }
 private:
+    std::shared_ptr<Ticker> ticker = nullptr;
+    bool randomized_coord = false;
     boost::asio::io_context& ioc;
     Players players;
     Maps maps_;
