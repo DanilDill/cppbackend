@@ -11,7 +11,6 @@ message(STATUS "${importTargets}")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-#add_compile_definitions(BOOST_BEAST_USE_STD_STRING_VIEW)
 add_executable(game_server
 	src/json_atribute.h
 	src/main.cpp
@@ -36,7 +35,7 @@ add_executable(game_server
 	src/get_handler.h
 	src/post_handler.cpp
 	src/post_handler.h
-	src/Tokenizer.h
+    src/tokenizer.h
 	src/head_handler.cpp
 	src/head_handler.h
 	src/default_handler.h

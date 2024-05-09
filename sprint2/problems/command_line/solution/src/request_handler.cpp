@@ -25,13 +25,13 @@ namespace http_handler
         switch (req.method())
         {
             case http::verb::get:
-                return get_handler(std::move(req),game_,wwwroot).execute();
+                return GetHandler(std::move(req), game_, wwwroot).execute();
             case http::verb::head:
-                return head_handler(std::move(req), game_, wwwroot).execute();
+                return HeadHandler(std::move(req), game_, wwwroot).execute();
             case http::verb::post:
-                return post_handler (std::move(req), game_, wwwroot).execute();
+                return PostHandler (std::move(req), game_, wwwroot).execute();
             default:
-                return default_handler(std::move(req)).execute();
+                return DefaultHandler(std::move(req)).execute();
 
         }
     }

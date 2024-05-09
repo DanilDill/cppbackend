@@ -37,7 +37,7 @@ namespace file
     MIMETYPE file_loader::get(const std::string& extension)
     {
 
-        if (extension == ".html" or extension == ".htm")
+        if (extension == ".html" || extension == ".htm")
         {
             return MIMETYPE::HTML;
         }
@@ -57,7 +57,7 @@ namespace file
         {
             return  MIMETYPE::PNG;
         }
-        if (extension == ".svg" or extension == "svgz")
+        if (extension == ".svg" || extension == "svgz")
         {
             return MIMETYPE::SVG;
         }

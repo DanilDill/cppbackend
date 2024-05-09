@@ -5,8 +5,8 @@
 #include <iostream>
 namespace http_handler
 {
-    StringResponse default_handler::MakeStringResponse(http::status status, beast::string_view body, unsigned http_version,
-                                  beast::string_view content_type)
+    StringResponse DefaultHandler::MakeStringResponse(http::status status, beast::string_view body, unsigned http_version,
+                                                      beast::string_view content_type)
     {
 
             StringResponse response(status,http_version);
@@ -19,53 +19,53 @@ namespace http_handler
 
     }
 
-    default_handler::default_handler(StringRequest&& request):
+    DefaultHandler::DefaultHandler(StringRequest&& request):
     _req(std::forward<decltype(request)>(request)){}
 
-    bool default_handler::isApiReq()
+    bool DefaultHandler::isApiReq()
     {
         return  _req.target().starts_with(RequestTargets::API_REQ);
     }
-    bool default_handler::isMapReq()
+    bool DefaultHandler::isMapReq()
     {
          return  _req.target().starts_with(RequestTargets::MAP_REQ);
     }
 
-    bool default_handler::isMapListReq()
+    bool DefaultHandler::isMapListReq()
     {
         return _req.target() == RequestTargets::MAP_REQ;
     }
 
-    bool default_handler::isMapIdReq()
+    bool DefaultHandler::isMapIdReq()
     {
         return  _req.target().starts_with(RequestTargets::MAP_ID_REQ);
     }
 
-    bool default_handler::isGameRequest()
+    bool DefaultHandler::isGameRequest()
     {
         return _req.target().starts_with(RequestTargets::GAME_REQ);
     }
-    bool default_handler::isGamePlayerListReq()
+    bool DefaultHandler::isGamePlayerListReq()
     {
         return _req.target() == RequestTargets::GAME_PLAYERS_REQ;
     }
 
-    bool default_handler::isJoinGameReq()
+    bool DefaultHandler::isJoinGameReq()
     {
         return _req.target() == RequestTargets::GAME_JOIN;
     }
 
-    bool default_handler::isGameStateReq()
+    bool DefaultHandler::isGameStateReq()
     {
         return _req.target() == RequestTargets::GAME_STATE;
     }
 
-    bool default_handler::isGameTick()
+    bool DefaultHandler::isGameTick()
     {
         return _req.target() == RequestTargets::GAME_TICK;
     }
 
-    StringResponse default_handler::Ok(std::string_view body)
+    StringResponse DefaultHandler::Ok(std::string_view body)
     {
         const auto text_response = [this](http::status status, std::string_view text)
         {
@@ -76,12 +76,12 @@ namespace http_handler
 
     }
 
-    bool default_handler::isGameAction()
+    bool DefaultHandler::isGameAction()
     {
          return _req.target() == RequestTargets::GAME_ACTION;
     }
 
-    std::variant <StringResponse, FileResponse> default_handler::HandleMapRequest()
+    std::variant <StringResponse, FileResponse> DefaultHandler::HandleMapRequest()
     {
         if (isMapListReq())
         {
@@ -95,7 +95,7 @@ namespace http_handler
 
     }
 
-    std::variant <StringResponse, FileResponse> default_handler::HandleGameRequest()
+    std::variant <StringResponse, FileResponse> DefaultHandler::HandleGameRequest()
     {
         if (isGamePlayerListReq())
         {
@@ -121,49 +121,49 @@ namespace http_handler
         return BadRequest();
     }
 
-     std::variant <StringResponse, FileResponse> default_handler::HandleGameTick()
+     std::variant <StringResponse, FileResponse> DefaultHandler::HandleGameTick()
     {
         return  NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), request_right[RequestTargets::GAME_TICK]);
     }
 
 
-    std::variant <StringResponse, FileResponse> default_handler::HandleMapsList()
+    std::variant <StringResponse, FileResponse> DefaultHandler::HandleMapsList()
      {
          return  NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), request_right[RequestTargets::MAP_REQ]);
      }
 
-     std::variant <StringResponse, FileResponse> default_handler::HandleMapId()
+     std::variant <StringResponse, FileResponse> DefaultHandler::HandleMapId()
      {
          return  NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), request_right[RequestTargets::MAP_ID_REQ]);
      }
 
-     std::variant <StringResponse, FileResponse> default_handler::HandlePlayerList()
+     std::variant <StringResponse, FileResponse> DefaultHandler::HandlePlayerList()
      {
          return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),request_right[RequestTargets::GAME_PLAYERS_REQ]);
      }
 
-     std::variant <StringResponse, FileResponse> default_handler::HandleJoinGame()
+     std::variant <StringResponse, FileResponse> DefaultHandler::HandleJoinGame()
      {
          return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), request_right[RequestTargets::GAME_JOIN]);
      }
 
-     std::variant <StringResponse, FileResponse> default_handler::HandleGameState()
+     std::variant <StringResponse, FileResponse> DefaultHandler::HandleGameState()
      {
          return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), request_right[RequestTargets::GAME_STATE]);
      }
 
-     std::variant <StringResponse, FileResponse> default_handler::HandlePlayerAction()
+     std::variant <StringResponse, FileResponse> DefaultHandler::HandlePlayerAction()
      {
          return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"), request_right[RequestTargets::GAME_ACTION]);
      }
 
-    std::variant <StringResponse, FileResponse> default_handler::HandleFileRequest()
+    std::variant <StringResponse, FileResponse> DefaultHandler::HandleFileRequest()
     {
         return NotAllowed(json_responce::ErrorJson("invalidMethod","Invalid method"),"GET, HEAD");
     }
 
 
-    std::variant <StringResponse, FileResponse> default_handler::HandleApiRequest()
+    std::variant <StringResponse, FileResponse> DefaultHandler::HandleApiRequest()
     {
         if (isMapReq())
         {
@@ -176,7 +176,7 @@ namespace http_handler
         return BadRequest(json_responce::ErrorJson("badRequest","Bad Request"));
     }
 
-    StringResponse default_handler::BadRequest(std::string_view errorMessage)
+    StringResponse DefaultHandler::BadRequest(std::string_view errorMessage)
     {
         const auto text_response = [this](http::status status, std::string_view text)
         {
@@ -187,7 +187,12 @@ namespace http_handler
         return resp;
     }
 
-    StringResponse default_handler::NotFound(std::string_view  body)
+    StringResponse DefaultHandler::BadRequest()
+    {
+        return BadRequest("");
+    }
+
+    StringResponse DefaultHandler::NotFound(std::string_view  body)
     {
         const auto text_response = [this](http::status status, std::string_view text)
         {
@@ -198,7 +203,7 @@ namespace http_handler
         return resp;
     }
 
-    StringResponse default_handler::Unauthorized(std::string_view body)
+    StringResponse DefaultHandler::Unauthorized(std::string_view body)
     {
         const auto text_response = [this](http::status status, std::string_view text)
         {
@@ -210,7 +215,7 @@ namespace http_handler
     }
 
 
-    std::variant <StringResponse, FileResponse> default_handler::execute()
+    std::variant <StringResponse, FileResponse> DefaultHandler::execute()
     {
         if (isApiReq())
         {
@@ -220,7 +225,7 @@ namespace http_handler
     }
 
 
-    StringResponse default_handler::NotAllowed(std::string_view  body, std::string_view methods )
+    StringResponse DefaultHandler::NotAllowed(std::string_view  body, std::string_view methods )
     {
         const auto text_response = [this](http::status status, std::string_view text)
         {
@@ -231,7 +236,7 @@ namespace http_handler
         resp.set(http::field::allow,methods);
         return resp;
     }
-    StringResponse default_handler::NotAllowed(std::string_view methods)
+    StringResponse DefaultHandler::NotAllowed(std::string_view methods)
     {
         return NotAllowed("",methods);
     }

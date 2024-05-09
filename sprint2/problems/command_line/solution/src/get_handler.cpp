@@ -3,20 +3,20 @@
 #include "staticfile_loader.h"
 #include "authorization_checker.h"
 namespace http_handler {
-    get_handler::get_handler(StringRequest &&request, model::Game &game, file::file_loader &root):
-            default_handler(std::forward<decltype(request)>(request)), wwwroot(root), game_(game) {}
+    GetHandler::GetHandler(StringRequest &&request, model::Game &game, file::file_loader &root):
+            DefaultHandler(std::forward<decltype(request)>(request)), game_(game), wwwroot(root) {}
 
-    std::variant <StringResponse, FileResponse> get_handler::HandleMapsList()
+    std::variant <StringResponse, FileResponse> GetHandler::HandleMapsList()
     {
         return Maps();
     }
-    std::variant <StringResponse, FileResponse> get_handler::HandleMapId()
+    std::variant <StringResponse, FileResponse> GetHandler::HandleMapId()
     {
         std::string map_id(_req.target().substr("/api/v1/maps/"sv.size()));
         return Map(map_id);
     }
 
-    std::variant <StringResponse, FileResponse> get_handler::HandlePlayerList()
+    std::variant <StringResponse, FileResponse> GetHandler::HandlePlayerList()
     {
         auto auth_check = AuthorizationChecker(_req,game_).check();
         if (auth_check)
@@ -29,7 +29,7 @@ namespace http_handler {
         }
     }
 
-    std::variant <StringResponse, FileResponse> get_handler::HandleGameState()
+    std::variant <StringResponse, FileResponse> GetHandler::HandleGameState()
     {
         auto auth_check = AuthorizationChecker(_req,game_).check();
         if (auth_check)
@@ -43,7 +43,7 @@ namespace http_handler {
     }
 
 
-    std::variant <StringResponse, FileResponse> get_handler::HandleFileRequest()
+    std::variant <StringResponse, FileResponse> GetHandler::HandleFileRequest()
     {
         std::string_view target = _req.target() == "/" ? "index.html" : _req.target().substr(1);
         auto response_file = wwwroot.try_get(target);
@@ -56,19 +56,19 @@ namespace http_handler {
     }
 
 
-    StringResponse get_handler::PlayerList()
+    StringResponse GetHandler::PlayerList()
     {
         std::string  body = json_responce::to_json(game_.GetPLayers());
         return Ok(body);
     }
 
-    StringResponse get_handler::PlayerState()
+    StringResponse GetHandler::PlayerState()
     {
         std::string  body = json_responce::to_json(game_.GetPLayers(), true);
         return Ok(body);
     }
 
-    StringResponse get_handler::Maps()
+    StringResponse GetHandler::Maps()
     {
         auto maps =  game_.GetMaps();
         auto maps_json_str = json_responce::to_json(maps);
@@ -76,7 +76,7 @@ namespace http_handler {
 
         return resp;
     }
-    StringResponse get_handler::Map(const std::string& map_id)
+    StringResponse GetHandler::Map(const std::string& map_id)
     {
         auto map  = game_.FindMap(model::Map::Id(map_id));
         if (map)
@@ -91,7 +91,7 @@ namespace http_handler {
         return resp;
     }
 
-    StringResponse get_handler::HandleNotFound()
+    StringResponse GetHandler::HandleNotFound()
     {
         const auto text_response = [this](http::status status, std::string_view text)
         {
@@ -101,9 +101,9 @@ namespace http_handler {
     }
 
 
-    StringResponse get_handler::MakeStringResponse(http::status status, std::string_view body, unsigned http_version,
-                                                   bool keep_alive,
-                                                   std::string_view content_type)
+    StringResponse GetHandler::MakeStringResponse(http::status status, std::string_view body, unsigned http_version,
+                                                  bool keep_alive,
+                                                  std::string_view content_type)
     {
         StringResponse response(status, http_version);
         response.set(http::field::content_type, content_type.data());

@@ -4,7 +4,6 @@
 #include "beast.h"
 #include "content_type.h"
 #include "json_response.h"
-#include "json_response.h"
 #include "requests.h"
 
 namespace http_handler
@@ -15,7 +14,7 @@ namespace http_handler
     using FileResponse = http::response<http::file_body>;
     using StringRequest = http::request<http::string_body>;
 
-    class default_handler
+    class DefaultHandler
     {
     protected:
     StringRequest _req;
@@ -38,7 +37,7 @@ namespace http_handler
 
 
     public:
-        explicit default_handler(StringRequest&& request);
+        explicit DefaultHandler(StringRequest&& request);
         bool isApiReq();
         bool isMapReq();
         bool isMapListReq();
@@ -52,7 +51,8 @@ namespace http_handler
 
         StringResponse NotAllowed(std::string_view  body, std::string_view methods );
         StringResponse NotAllowed(std::string_view methods);
-        virtual StringResponse BadRequest(std::string_view  errorMessage="");
+        virtual StringResponse BadRequest(std::string_view  errorMessage);
+        virtual StringResponse BadRequest();
         virtual StringResponse NotFound(std::string_view  body="");
         virtual StringResponse Unauthorized(std::string_view  body= "");
         virtual StringResponse Ok(std::string_view body="");

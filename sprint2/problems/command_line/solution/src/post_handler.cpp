@@ -7,12 +7,12 @@
 #include "authorization_checker.h"
 namespace http_handler
 {
-    post_handler::post_handler(StringRequest&& request, model::Game& game, file::file_loader& root):
-    default_handler(std::move(request)),game_(game),wwwroot(root)
+    PostHandler::PostHandler(StringRequest&& request, model::Game& game, file::file_loader& root):
+            DefaultHandler(std::move(request)), game_(game), wwwroot(root)
     {
     }
 
-    std::pair<std::string,std::string> post_handler::parse()
+    std::pair<std::string,std::string> PostHandler::parse()
     {
         auto json_data =  boost::json::parse(_req.body().data());
 
@@ -29,7 +29,7 @@ namespace http_handler
         return std::make_pair(std::move(user_name),std::move(map_id));
     }
 
-   std::variant <StringResponse, FileResponse> post_handler::HandlePlayerAction()
+   std::variant <StringResponse, FileResponse> PostHandler::HandlePlayerAction()
 {
     AuthorizationChecker checker(_req,game_);
     auto auth_check = checker.check();
@@ -61,7 +61,7 @@ namespace http_handler
 }
 
 
-    std::variant <StringResponse, FileResponse> post_handler::HandleJoinGame()
+    std::variant <StringResponse, FileResponse> PostHandler::HandleJoinGame()
     {
         if (_req.body().empty())
         {
@@ -86,7 +86,7 @@ namespace http_handler
         return  Ok(json_responce::AuthTokenJson(*token,id));
     }
 
-    std::variant <StringResponse, FileResponse> post_handler::HandleGameTick()
+    std::variant <StringResponse, FileResponse> PostHandler::HandleGameTick()
     {
         if (!game_.hasTicker())
         {
@@ -95,11 +95,9 @@ namespace http_handler
                 return BadRequest(json_responce::ErrorJson("invalidArgument","Failed to parse tick request JSON"));
             }
             auto json_data =  boost::json::parse(_req.body().data());
-            size_t tick_ms;
             if (auto tick_iter = json_data.as_object().find("timeDelta"); tick_iter != json_data.as_object().end() && tick_iter->value().is_int64())
             {
-                tick_ms = tick_iter->value().as_int64();
-                game_.Tick(std::chrono::milliseconds(tick_ms));
+                game_.Tick(std::chrono::milliseconds(tick_iter->value().as_int64()));
                 return Ok("{}");
             }
             else

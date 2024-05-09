@@ -6,7 +6,7 @@
 #include <atomic>
 #include <memory>
 #include <optional>
-#include "Tokenizer.h"
+#include "tokenizer.h"
 #include "tagged.h"
 #include "ticker.h"
 #include <boost/asio.hpp>
@@ -80,9 +80,9 @@ public:
         {
             makeCorners();
         }
-    bool IsOnTheRoad(Pointf point)
+    bool IsOnTheRoad(Pointf point) const
     {
-        return left_bottom_corner <= point and point <= right_top_corner;
+        return left_bottom_corner <= point && point <= right_top_corner;
     }
     bool IsHorizontal() const noexcept {
         return start_.y == end_.y;
@@ -105,7 +105,7 @@ public:
         double new_y = bound(left_bottom_corner.y, right_top_corner.y, point.y);
         return Pointf{new_x, new_y};
     }
-    double bound(double bound_1, double bound_2,double value)
+    static double bound(double bound_1, double bound_2,double value)
     {
         double lower = std::min(bound_1, bound_2);
         double upper = std::max(bound_1, bound_2);
@@ -126,7 +126,7 @@ private:
     }
     Pointf left_bottom_corner;
     Pointf right_top_corner;
-    double width = 0.4;
+    const double width = 0.4;
     Point start_;
     Point end_;
 };
@@ -387,7 +387,7 @@ public:
     void Tick(std::chrono::milliseconds  ms);
     bool hasTicker()
     {
-        return ticker == nullptr ? false : true;
+        return ticker == nullptr;
     }
     void SetTicker(std::chrono::milliseconds ms )
     {

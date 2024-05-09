@@ -4,7 +4,7 @@
 #include <boost/json.hpp>
 namespace json_responce
 {
-    using respAttr = JsonAttribute::ResponseAtrrubutes;
+    using respAttr = JsonAttribute::ResponseAttributes;
 
     std::string to_json(const std::vector<std::shared_ptr<model::Map>>& maps)
     {

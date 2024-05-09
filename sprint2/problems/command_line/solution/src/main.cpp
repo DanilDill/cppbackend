@@ -48,7 +48,7 @@ struct Args {
      {
          throw std::runtime_error("wwwroot not specified");
      }
-     args.randomize_spawn_points = vm.contains("randomize-spawn-points") ? true : false;
+     args.randomize_spawn_points = vm.contains("randomize-spawn-points");
      args.tick_period = vm.contains("tick-period") ? args.tick_period  : 0;
      return args;
   //  return std::nullopt;

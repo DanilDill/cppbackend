@@ -7,20 +7,20 @@
 namespace http_handler
 {
 
-    class head_handler : public get_handler
+    class HeadHandler : public GetHandler
     {
     public:
-        head_handler(StringRequest&&request, model::Game& game, file::file_loader& root);
+        HeadHandler(StringRequest&&request, model::Game& game, file::file_loader& root);
 
     protected:
-        virtual std::variant <StringResponse, FileResponse> HandlePlayerAction()override;
-        virtual std::variant <StringResponse, FileResponse> HandleJoinGame()override;
-        virtual std::variant <StringResponse, FileResponse> HandleFileRequest()override;
-        virtual StringResponse Unauthorized(std::string_view body)override;
-        virtual StringResponse PlayerList()override;
-        virtual StringResponse PlayerState()override;
-        virtual StringResponse Maps()override;
-        virtual StringResponse Map(const std::string& map_id)override;
-        virtual StringResponse HandleNotFound()override;
+        std::variant <StringResponse, FileResponse> HandlePlayerAction()override;
+        std::variant <StringResponse, FileResponse> HandleJoinGame()override;
+        std::variant <StringResponse, FileResponse> HandleFileRequest()override;
+        StringResponse Unauthorized(std::string_view body)override;
+        StringResponse PlayerList()override;
+        StringResponse PlayerState()override;
+        StringResponse Maps()override;
+        StringResponse Map(const std::string& map_id)override;
+        StringResponse HandleNotFound()override;
     };
 }

@@ -4,10 +4,10 @@
 
 struct JsonAttribute
  {
-   JsonAttribute()=delete;
+   JsonAttribute() = delete;
    struct BuildArrayAttributes
     {
-       BuildArrayAttributes()=delete;
+       BuildArrayAttributes() = delete;
        constexpr static const std::string_view NAME = "buildings";
        constexpr static const std::string_view ATTR_X = "x";
        constexpr static const std::string_view ATTR_Y = "y";
@@ -16,7 +16,7 @@ struct JsonAttribute
     };
    struct RoadArrayAttributes
     {
-       RoadArrayAttributes()=delete;
+       RoadArrayAttributes() = delete;
        constexpr static const std::string_view NAME = "roads";
        constexpr static const std::string_view ATTR_X0 = "x0";
        constexpr static const std::string_view ATTR_Y0 = "y0";
@@ -25,7 +25,7 @@ struct JsonAttribute
     };
     struct OfficeArrayAttributes
     {
-       OfficeArrayAttributes()=delete;
+       OfficeArrayAttributes() = delete;
        constexpr static const std::string_view NAME = "offices";
        constexpr static const std::string_view ATTR_ID = "id";
        constexpr static const std::string_view ATTR_X = "x";
@@ -35,11 +35,11 @@ struct JsonAttribute
     };
     struct MapArrayAttributes
     {
-        MapArrayAttributes()=delete;
+        MapArrayAttributes() = delete;
         constexpr static const std::string_view NAME = "maps";
         struct MapAttributes
         {
-            MapAttributes()=delete;
+            MapAttributes() = delete;
             constexpr static const std::string_view ATTR_ID = "id";
             constexpr static const std::string_view ATTR_NAME = "name";
             constexpr static const std::string_view DOG_SPEED = "dogSpeed";
@@ -50,9 +50,9 @@ struct JsonAttribute
     };
     constexpr static const std::string_view DOG_SPEED_DEFAULT = "defaultDogSpeed";
 
-    struct ResponseAtrrubutes
+    struct ResponseAttributes
     {
-        ResponseAtrrubutes()=delete;
+        ResponseAttributes() = delete;
         constexpr static const std::string_view CODE = "code";
         constexpr static const std::string_view MESSAGE = "message";
     };

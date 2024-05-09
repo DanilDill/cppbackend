@@ -3,19 +3,19 @@
 namespace http_handler
 {
 
-    head_handler::head_handler(StringRequest&&request, model::Game& game, file::file_loader& root):
-            get_handler(std::move(request),game,root)
+    HeadHandler::HeadHandler(StringRequest&&request, model::Game& game, file::file_loader& root):
+            GetHandler(std::move(request), game, root)
     {}
 
-    std::variant <StringResponse, FileResponse> head_handler::HandlePlayerAction()
+    std::variant <StringResponse, FileResponse> HeadHandler::HandlePlayerAction()
 {
     return NotAllowed(request_right[RequestTargets::GAME_ACTION]);
 }
-    std::variant <StringResponse, FileResponse> head_handler::HandleJoinGame()
+    std::variant <StringResponse, FileResponse> HeadHandler::HandleJoinGame()
     {
         return NotAllowed(request_right[RequestTargets::GAME_JOIN]);
     }
-    std::variant <StringResponse, FileResponse> head_handler::HandleFileRequest()
+    std::variant <StringResponse, FileResponse> HeadHandler::HandleFileRequest()
     {
         auto target = _req.target() == "/" ? "index.html" : _req.target().substr(1);
         auto response_file = wwwroot.try_get(target.data());
@@ -26,7 +26,7 @@ namespace http_handler
         return HandleNotFound();
     }
 
-     StringResponse head_handler::HandleNotFound()
+     StringResponse HeadHandler::HandleNotFound()
     {
         const auto text_response = [this](http::status status, std::string_view text)
         {
@@ -34,24 +34,24 @@ namespace http_handler
         };
         return text_response(http::status::not_found,"");
     }
-    StringResponse head_handler::Unauthorized(std::string_view body)
+    StringResponse HeadHandler::Unauthorized(std::string_view body)
     {
-        return default_handler::Unauthorized("");
+        return DefaultHandler::Unauthorized("");
     }
 
-    StringResponse head_handler::PlayerList()
+    StringResponse HeadHandler::PlayerList()
     {
         return Ok();
     }
-    StringResponse head_handler::PlayerState()
+    StringResponse HeadHandler::PlayerState()
     {
         return Ok();
     }
-    StringResponse head_handler::Maps()
+    StringResponse HeadHandler::Maps()
     {
         return Ok();
     }
-    StringResponse head_handler::Map(const std::string& map_id)
+    StringResponse HeadHandler::Map(const std::string& map_id)
     {
         auto map  = game_.FindMap(model::Map::Id(map_id));
         if (map)

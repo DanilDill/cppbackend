@@ -1,3 +1,5 @@
+#pragma once
+
 #include "beast.h"
 #include "model.h"
 #include <optional>
@@ -9,13 +11,13 @@ namespace http_handler
     class AuthorizationChecker
     {
     private:
-        std::regex _regex; //("Bearer [a-z,A-Z,0-9]{32}");
+        std::regex _regex = std::regex("Bearer [a-z,A-Z,0-9]{32}");
         const StringRequest&  _req;
         const model::Game& _game_ref;
         Token lastToken = Token ("");
     public:
        explicit AuthorizationChecker(const StringRequest& request, const model::Game& game):
-        _req(request),_game_ref(game),_regex("Bearer [a-z,A-Z,0-9]{32}"){};
+        _req(request),_game_ref(game){};
         std::optional<std::string> check()
         {
 
@@ -34,7 +36,7 @@ namespace http_handler
                 return json_responce::ErrorJson("invalidToken","Authorization header is required");
             }
         };
-        Token getLastToken()
+        Token getLastToken() const
         {
             return lastToken;
         }
