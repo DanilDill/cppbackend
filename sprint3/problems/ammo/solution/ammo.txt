@@ -1,0 +1,10 @@
+[Connection: close]
+[Host: localhost]
+[Cookie: None]
+/api/v1/maps
+/api/v1/maps/map1
+/api/v1/maps/town
+/api/v1/game/join
+/api/v1/game/tick
+/api/v1/game/action
+/api/v1/game.players 
