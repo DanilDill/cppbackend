@@ -49,7 +49,13 @@ struct JsonAttribute
         };
     };
     constexpr static const std::string_view DOG_SPEED_DEFAULT = "defaultDogSpeed";
-
+    struct LootGeneratorConfig
+    {
+        LootGeneratorConfig() = delete;
+        constexpr static const std::string_view NAME = "lootGeneratorConfig";
+        constexpr static const std::string_view ATTR_PERIOD = "period";
+        constexpr static const std::string_view ATTR_PROBABILITY = "probability";
+    };
     struct ResponseAttributes
     {
         ResponseAttributes() = delete;

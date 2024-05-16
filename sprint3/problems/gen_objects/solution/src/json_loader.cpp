@@ -110,7 +110,13 @@ namespace json_loader
 
     return map;
 }
-
+    std::shared_ptr<loot_gen::LootGenerator> serializeLootGenerator(const boost::json::value& json_data)
+    {
+        auto loot_generator_json = json_data.as_object().at(JsonAttribute::LootGeneratorConfig::NAME);
+        uint64_t period = loot_generator_json.as_object().at(JsonAttribute::LootGeneratorConfig::ATTR_PERIOD).as_double() * 1000;
+        double probability = loot_generator_json.as_object().at(JsonAttribute::LootGeneratorConfig::ATTR_PROBABILITY).as_double();
+        return std::make_shared<loot_gen::LootGenerator>(loot_gen::LootGenerator::TimeInterval(period),probability);
+    }
 model::Game LoadGame(const std::filesystem::path& json_path, boost::asio::io_context& ioc)
 {
     model::Game game(ioc);
@@ -137,6 +143,8 @@ model::Game LoadGame(const std::filesystem::path& json_path, boost::asio::io_con
     }
     game.SetDefaultDogSpeed(dogspeed);
 
+    auto  loot_generator = serializeLootGenerator(json_data);
+    game.AddLootGenerator(loot_generator);
     auto maps = json_data.as_object().at(JsonAttribute::MapArrayAttributes::NAME).as_array();
     for (auto& map_json : maps)
     {

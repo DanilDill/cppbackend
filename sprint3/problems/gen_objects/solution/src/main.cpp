@@ -42,6 +42,7 @@ struct Args {
      }
      if (!vm.contains("config-file"))
      {
+         std::cout << desc << std::endl;
          throw std::runtime_error("config file was not found");
      }
      if (!vm.contains("www-root"))

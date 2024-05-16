@@ -144,5 +144,34 @@ void Game::Tick(std::chrono::milliseconds  ms)
     {
         player.second.move(ms);
     }
+    _loot_count = _lootGenerator->Generate(ms,_loot_count,players.size());
+}
+
+void Game::SetRandomizedCoord()
+{
+        randomized_coord = true;
+}
+
+bool Game::hasTicker()
+{
+    return ticker == nullptr;
+}
+
+void Game::SetTicker(std::chrono::milliseconds ms )
+{
+    auto api_strand = net::make_strand(ioc);
+    ticker = std::make_shared<Ticker>(api_strand,ms,
+                                      [this](std::chrono::milliseconds delta) { Tick(delta);});
+    ticker->Start();
+}
+
+void Game::SetDirection(Token t, Direction direction)
+{
+    FindPlayer(t)->SetSpeed(direction);
+}
+
+void Game::AddLootGenerator(const std::shared_ptr<loot_gen::LootGenerator>loot_gen)
+{
+    _lootGenerator = loot_gen;
 }
 }  // namespace model

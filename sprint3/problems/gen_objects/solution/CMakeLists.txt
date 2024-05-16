@@ -42,7 +42,7 @@ add_executable(game_server
 	src/default_handler.cpp
 	src/ticker.h
 	src/loot_generator.h
-	src/loot_generator.h
+	src/loot_generator.cpp
 		)
 
 target_include_directories(game_server PRIVATE CONAN_PKG::boost)
