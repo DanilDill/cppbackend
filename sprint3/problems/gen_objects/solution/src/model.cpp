@@ -5,33 +5,6 @@
 namespace model {
 using namespace std::literals;
 
-void Map::AddOffice(Office office) {
-    if (warehouse_id_to_index_.contains(office.GetId())) {
-        throw std::invalid_argument("Duplicate warehouse");
-    }
-
-    const size_t index = offices_.size();
-    Office& o = offices_.emplace_back(std::move(office));
-    try {
-        warehouse_id_to_index_.emplace(o.GetId(), index);
-    } catch (...) {
-        // Удаляем офис из вектора, если не удалось вставить в unordered_map
-        offices_.pop_back();
-        throw;
-    }
-}
-
-
-
-void Map::setDogSpeed(double speed)
-{
-    dogspeed = speed;
-}
-double Map::getDogSpeed()const
-{
-    return dogspeed;
-}
-
 void Game::AddMap(Map map) {
     const size_t index = maps_.size();
     if (auto [it, inserted] = map_id_to_index_.emplace(map.GetId(), index); !inserted) {
@@ -94,49 +67,6 @@ const Game::Players& Game::GetPLayers()
     }
 
 
-std::string to_string(Direction direction)
-{
-    switch (direction)
-    {
-        case Direction::NORTH:
-            return "U";
-        case Direction::SOUTH:
-            return "D";
-        case Direction::WEST:
-            return "L";
-        case Direction::EAST:
-            return "R";
-        case Direction::STOP:
-            return "";
-        default:
-            return "unknown";
-        }
-}
-
-Direction to_direction(const std::string& string)
-{
-    if (string =="U")
-    {
-        return Direction::NORTH;
-    }
-    if (string =="D")
-    {
-        return Direction::SOUTH;
-    }
-    if (string =="L")
-    {
-        return Direction::WEST;
-    }
-    if (string =="R")
-    {
-        return Direction::EAST;
-    }
-    if (string =="")
-    {
-        return Direction::STOP;
-    }
-    return Direction::UNKNOWN;
-}
 
 void Game::Tick(std::chrono::milliseconds  ms)
 {
