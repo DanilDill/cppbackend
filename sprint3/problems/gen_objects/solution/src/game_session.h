@@ -14,8 +14,8 @@ namespace model
 
         private:
             void MovePlayers(std::chrono::milliseconds ms);
-            static void  MovePlayer(std::shared_ptr<Player>,std::chrono::milliseconds ms);
-            std::optional<Pointf> bounded_move(std::shared_ptr<Dog>dog, Pointf pointf);
+            static void  MovePlayer(std::shared_ptr<Player>,std::shared_ptr<Map> map,std::chrono::milliseconds ms);
+            static std::optional<Pointf> bounded_move(std::shared_ptr<Dog>dog, std::shared_ptr<Map> map, Pointf pointf);
         private:
             std::vector<std::shared_ptr<Player>>_players;
             std::shared_ptr<Map>_map;

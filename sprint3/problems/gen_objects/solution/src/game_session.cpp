@@ -23,15 +23,15 @@ namespace model
     {
         for (auto player:_players)
         {
-            MovePlayer(player,ms);
+            MovePlayer(player,_map,ms);
         }
     }
 
 
-    std::optional<Pointf> GameSession::bounded_move(std::shared_ptr<Dog> dog,Pointf pointf)
+    std::optional<Pointf> GameSession::bounded_move(std::shared_ptr<Dog> dog, std::shared_ptr<Map> map,Pointf pointf)
     {
         std::vector<Road> lst;
-        for (auto road : _map->GetRoads())
+        for (auto road : map->GetRoads())
         {
             if (road.IsOnTheRoad(dog->_coord))
             {
@@ -61,7 +61,7 @@ namespace model
         return most_far;
     }
 
-    void GameSession::MovePlayer(std::shared_ptr<Player> player, std::chrono::milliseconds ms)
+    void GameSession::MovePlayer(std::shared_ptr<Player> player, std::shared_ptr<Map> map, std::chrono::milliseconds ms)
     {
         auto dog = player->GetDog();
         Pointf estimated_position =
@@ -70,7 +70,7 @@ namespace model
                         dog->_coord.y + dog->_speed.y * std::chrono::duration<double>(ms).count()
                 };
 
-        auto new_position = bounded_move(estimated_position);
+        auto new_position = bounded_move(dog,map,estimated_position);
         if (new_position)
         {
             dog->_coord = *new_position;
