@@ -33,10 +33,6 @@ namespace model
                 _name(name),_map(map),_id(id)
         {
         };
-        void  move(std::chrono::milliseconds ms);
-        std::optional<Pointf> bounded_move(Pointf pointf);
-        void SetSpeed(Direction direction);
-
         void SetRandomized();
         std::shared_ptr<Dog> GetDog() const;
 

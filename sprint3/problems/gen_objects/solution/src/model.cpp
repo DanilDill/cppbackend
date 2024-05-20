@@ -22,11 +22,20 @@ void Game::AddMap(Map map) {
 int Game::AddPlayer(Token t, const std::string& player_name, const Map::Id& id)
     {
         auto size = players.size();
-        players[t] = std::make_shared<Player>(size,player_name,FindMap(id));
+
+        auto  player = std::make_shared<Player>(size,player_name,FindMap(id));
         if (randomized_coord)
         {
-            players[t]->SetRandomized();
+            player->SetRandomized();
         }
+        players[t] = player;
+        if (_gameSession.find(id) == _gameSession.end())
+        {
+            auto session = std::make_shared<GameSession>(ioc,_lootGenerator,FindMap(id));
+            _gameSession.emplace(id,session);
+
+        }
+        _gameSession[id]->AddPlayer(t,player);
         return players[t]->GetId();
     }
 
@@ -36,10 +45,13 @@ const Game::Maps& Game::GetMaps() const noexcept
     }
     std::optional<std::shared_ptr<Player>> Game::FindPlayer(Token t) const
     {
-        auto player = players.find(t);
-        if (player != players.end())
+        for (auto& session : _gameSession)
         {
-            return player->second;
+            auto player_optional = session.second->FindPlayer(t);
+            if (player_optional)
+            {
+                return player_optional;
+            }
         }
         return std::nullopt;
     }
@@ -70,11 +82,12 @@ const Game::Players& Game::GetPLayers()
 
 void Game::Tick(std::chrono::milliseconds  ms)
 {
-    for (auto player: players)
+    for (auto session: _gameSession)
     {
-        player.second->move(ms);
+        session.second->Tick(ms);
+
     }
-    _loot_count = _lootGenerator->Generate(ms,_loot_count,players.size());
+   // _loot_count = _lootGenerator->Generate(ms,_loot_count,players.size());
 }
 
 void Game::SetRandomizedCoord()
@@ -97,11 +110,18 @@ void Game::SetTicker(std::chrono::milliseconds ms )
 
 void Game::SetDirection(Token t, Direction direction)
 {
-    FindPlayer(t).value()->SetSpeed(direction);
+
+    for (auto session: _gameSession)
+    {
+        if (auto player = session.second->FindPlayer(t); player!= std::nullopt)
+        {
+            session.second->SetSpeed(t,direction);
+        }
+    }
 }
 
 void Game::AddLootGenerator(const std::shared_ptr<loot_gen::LootGenerator>loot_gen)
 {
     _lootGenerator = loot_gen;
 }
-}  // namespace model
+}

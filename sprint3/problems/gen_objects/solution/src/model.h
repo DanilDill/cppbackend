@@ -15,7 +15,7 @@
 #include "direction.h"
 #include "game_map.h"
 #include "player.h"
-
+#include "game_session.h"
 namespace model
 {
 
@@ -45,6 +45,7 @@ public:
 
 private:
     std::shared_ptr<Ticker> ticker = nullptr;
+    std::unordered_map<Map::Id,std::shared_ptr<GameSession>,MapIdHasher> _gameSession;
     bool randomized_coord = false;
     boost::asio::io_context& ioc;
     Players players;
