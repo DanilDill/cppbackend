@@ -22,19 +22,19 @@ void Game::AddMap(Map map) {
 int Game::AddPlayer(Token t, const std::string& player_name, const Map::Id& id)
     {
         auto size = players.size();
-        players[t] = Player(size,player_name,FindMap(id));
+        players[t] = std::make_shared<Player>(size,player_name,FindMap(id));
         if (randomized_coord)
         {
-            players[t].SetRandomized();
+            players[t]->SetRandomized();
         }
-        return players[t].GetId();
+        return players[t]->GetId();
     }
 
 const Game::Maps& Game::GetMaps() const noexcept
     {
         return maps_;
     }
-    std::optional<Player> Game::FindPlayer(Token t) const
+    std::optional<std::shared_ptr<Player>> Game::FindPlayer(Token t) const
     {
         auto player = players.find(t);
         if (player != players.end())
@@ -72,7 +72,7 @@ void Game::Tick(std::chrono::milliseconds  ms)
 {
     for (auto player: players)
     {
-        player.second.move(ms);
+        player.second->move(ms);
     }
     _loot_count = _lootGenerator->Generate(ms,_loot_count,players.size());
 }
@@ -97,7 +97,7 @@ void Game::SetTicker(std::chrono::milliseconds ms )
 
 void Game::SetDirection(Token t, Direction direction)
 {
-    FindPlayer(t)->SetSpeed(direction);
+    FindPlayer(t).value()->SetSpeed(direction);
 }
 
 void Game::AddLootGenerator(const std::shared_ptr<loot_gen::LootGenerator>loot_gen)

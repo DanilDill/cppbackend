@@ -23,7 +23,7 @@ class Game {
 public:
     using Maps = std::vector<std::shared_ptr<Map>>;
     using PlayerHasher = util::TaggedHasher<Token>;
-    using Players = std::unordered_map<Token,Player,PlayerHasher>;
+    using Players = std::unordered_map<Token,std::shared_ptr<Player>,PlayerHasher>;
     using MapIdHasher = util::TaggedHasher<Map::Id>;
     using MapIdToIndex = std::unordered_map<Map::Id, size_t, MapIdHasher>;
     Game(boost::asio::io_context& context): ioc(context){};
@@ -38,7 +38,7 @@ public:
     int AddPlayer(Token t, const std::string& player_name, const Map::Id& id);
     void AddLootGenerator(const std::shared_ptr<loot_gen::LootGenerator>loot_gen);
     const Maps& GetMaps() const noexcept;
-    std::optional<Player> FindPlayer(Token t) const;
+    std::optional<std::shared_ptr<Player>> FindPlayer(Token t) const;
     const Players& GetPLayers();
     const std::shared_ptr<Map> FindMap(const Map::Id& id) const noexcept;
     bool hasTicker();

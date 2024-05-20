@@ -17,7 +17,7 @@ namespace json_responce
         {
             for (auto& player: players)
             {
-                response_json[std::to_string(player.second.GetId())] = boost::json::value{{"name", player.second.GetName()}};
+                response_json[std::to_string(player.second->GetId())] = boost::json::value{{"name", player.second->GetName()}};
 
             }
             return boost::json::serialize(response_json);
@@ -26,7 +26,7 @@ namespace json_responce
         {
             for (auto& player: players)
             {
-                response_json[std::to_string(player.second.GetId())] = to_json_obj(*(player.second.GetDog()));
+                response_json[std::to_string(player.second->GetId())] = to_json_obj(*(player.second->GetDog()));
             }
             return  boost::json::serialize(boost::json::value{{"players",response_json}});
         }
