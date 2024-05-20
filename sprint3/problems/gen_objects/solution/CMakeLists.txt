@@ -43,6 +43,17 @@ add_executable(game_server
 	src/ticker.h
 	src/loot_generator.h
 	src/loot_generator.cpp
+		src/direction.h
+		src/direction.cpp
+		src/player.h
+		src/player.cpp
+		src/game_map.h
+		src/game_map.cpp
+		src/building.h
+		src/road.h
+		src/road.cpp
+		src/game_session.h
+		src/game_session.cpp
 		)
 
 target_include_directories(game_server PRIVATE CONAN_PKG::boost)
