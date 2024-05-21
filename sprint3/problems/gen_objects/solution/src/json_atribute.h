@@ -56,6 +56,22 @@ struct JsonAttribute
         constexpr static const std::string_view ATTR_PERIOD = "period";
         constexpr static const std::string_view ATTR_PROBABILITY = "probability";
     };
+    struct LootTypesArr
+    {
+        LootTypesArr() = delete;
+        constexpr static const std::string_view NAME = "lootTypes";
+        struct LootType
+        {
+            constexpr static const std::string_view ATTR_NAME = "name";
+            constexpr static const std::string_view ATTR_FILE = "file";
+            constexpr static const std::string_view ATTR_TYPE = "type";
+            constexpr static const std::string_view ATTR_SCALE = "scale";
+            constexpr static const std::string_view ATTR_ROTATION = "rotation";
+            constexpr static const std::string_view ATTR_COLOR = "color";
+
+        };
+    };
+
     struct ResponseAttributes
     {
         ResponseAttributes() = delete;

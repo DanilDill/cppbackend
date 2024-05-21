@@ -9,7 +9,7 @@ namespace json_loader
     using Roads = std::vector<model::Road>;
     using Buildings  = std::vector<model::Building>;
     using Offices = std::vector<model::Office>;
-
+    using LootTypes = std::vector<model::LootType>;
     Buildings serializeBuildings(const boost::json::value &map_json)
     {
         using attributes = JsonAttribute::BuildArrayAttributes;
@@ -72,6 +72,44 @@ namespace json_loader
         }
         return offices_vec;
     }
+
+    LootTypes serializeLootTypes(const boost::json::value &map_json)
+    {
+        using attribute = JsonAttribute::LootTypesArr;
+        auto lootTypesJson = map_json.at(attribute::NAME).as_array();
+        LootTypes result;
+        result.reserve(lootTypesJson.size());//();
+        for (const auto&  lootType: lootTypesJson)
+        {
+            model::LootType lootTypeMap;
+            if(lootType.as_object().contains(attribute::LootType::ATTR_NAME))
+            {
+                lootTypeMap[attribute::LootType::ATTR_NAME] = std::string(lootType.as_object().at(attribute::LootType::ATTR_NAME).as_string().c_str());
+            }
+            if(lootType.as_object().contains(attribute::LootType::ATTR_COLOR))
+            {
+                lootTypeMap[attribute::LootType::ATTR_COLOR] = std::string(lootType.as_object().at(attribute::LootType::ATTR_COLOR).as_string().c_str());
+            }
+            if(lootType.as_object().contains(attribute::LootType::ATTR_FILE))
+            {
+                lootTypeMap[attribute::LootType::ATTR_FILE] = std::string(lootType.as_object().at(attribute::LootType::ATTR_FILE).as_string().c_str());
+            }
+            if(lootType.as_object().contains(attribute::LootType::ATTR_ROTATION))
+            {
+                lootTypeMap[attribute::LootType::ATTR_ROTATION] = lootType.as_object().at(attribute::LootType::ATTR_ROTATION).as_int64();
+            }
+            if(lootType.as_object().contains(attribute::LootType::ATTR_SCALE))
+            {
+                lootTypeMap[attribute::LootType::ATTR_SCALE] = lootType.as_object().at(attribute::LootType::ATTR_SCALE).as_double();
+            }
+            if(lootType.as_object().contains(attribute::LootType::ATTR_TYPE))
+            {
+                lootTypeMap[attribute::LootType::ATTR_TYPE] = std::string(lootType.as_object().at(attribute::LootType::ATTR_TYPE).as_string().c_str());
+            }
+            result.push_back(lootTypeMap);
+        }
+        return result;
+    }
     model::Map serialize_map(const boost::json::value &map_json, double speed, boost::asio::io_context& ioContext)
 {
     using attributes = JsonAttribute::MapArrayAttributes::MapAttributes;
@@ -80,6 +118,7 @@ namespace json_loader
     Roads roads_ =  serializeRoads(map_json);
     Buildings  buildings_ = serializeBuildings(map_json);
     Offices  offices = serializeOffices(map_json);
+    LootTypes lootTypes = serializeLootTypes(map_json);
     model::Map map(id_,map_name,ioContext);
 
     for (const auto& road : roads_)
@@ -98,6 +137,10 @@ namespace json_loader
         map.AddOffice(office);
     }
 
+    for (const auto& lootType: lootTypes)
+    {
+        map.AddLootType(lootType);
+    }
     if (auto iter = map_json.as_object().find(JsonAttribute::MapArrayAttributes::MapAttributes::DOG_SPEED);
         iter != map_json.as_object().end())
     {

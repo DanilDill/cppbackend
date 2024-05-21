@@ -7,6 +7,7 @@ namespace json_responce
 {
     std::string to_json(const std::vector<std::shared_ptr<model::Map>>& maps);
     std::string to_json(const model::Map& map);
+    boost::json::array to_json(const model::Map::LootTypes& loots);
     boost::json::object to_json_obj(const model::Dog& dog);
 
     template <typename Key,typename Value,typename Hasher>

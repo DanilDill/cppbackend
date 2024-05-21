@@ -92,15 +92,33 @@ namespace json_responce
         }
         return offices_json;
     }
+
+    boost::json::array to_json(const model::Map::LootTypes& loots)
+    {
+        boost::json::array json_arr;
+
+        for (const auto& loot_type : loots)
+        {
+         boost::json::object obj;
+         for (const auto& pair: loot_type)
+         {
+                std::visit([&obj,key = pair.first](auto && value){obj[key] = value;},pair.second);
+         }
+         json_arr.push_back(obj);
+        }
+        return json_arr;
+    }
     std::string to_json(const model::Map& map)
     {
         boost::json::object map_json;
         using attr = JsonAttribute::MapArrayAttributes::MapAttributes;
+        using loot = JsonAttribute::LootTypesArr;
         map_json[attr::ATTR_ID] = *map.GetId();
         map_json[attr::ATTR_NAME] = map.GetName();
         map_json[attr::ATTR_ROADS] = to_json(map.GetRoads());
         map_json[attr::ATTR_BUILDINGS] = to_json(map.GetBuildings());
         map_json[attr::ATTR_OFFICES] = to_json(map.GetOffices());
+        map_json[loot::NAME] = to_json(map.GetLootTypes());
         return boost::json::serialize(map_json);
     }
 

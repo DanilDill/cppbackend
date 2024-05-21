@@ -36,6 +36,10 @@ namespace model
         buildings_.emplace_back(building);
     }
 
+    const Map::LootTypes& Map::GetLootTypes() const noexcept
+    {
+        return _loot_types;
+    }
 
     void Map::AddOffice(Office office) {
         if (warehouse_id_to_index_.contains(office.GetId())) {
@@ -53,7 +57,10 @@ namespace model
         }
     }
 
-
+    void Map::AddLootType(const LootType& lootType)
+    {
+        _loot_types.push_back(lootType);
+    }
 
     void Map::setDogSpeed(double speed)
     {

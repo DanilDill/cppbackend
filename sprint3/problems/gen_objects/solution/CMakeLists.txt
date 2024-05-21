@@ -54,7 +54,7 @@ add_executable(game_server
 		src/road.cpp
 		src/game_session.h
 		src/game_session.cpp
-		)
+		src/loot_type.h)
 
 target_include_directories(game_server PRIVATE CONAN_PKG::boost)
 target_link_libraries(game_server PRIVATE Threads::Threads CONAN_PKG::boost)
