@@ -26,6 +26,7 @@ public:
     using Players = std::unordered_map<Token,std::shared_ptr<Player>,PlayerHasher>;
     using MapIdHasher = util::TaggedHasher<Map::Id>;
     using MapIdToIndex = std::unordered_map<Map::Id, size_t, MapIdHasher>;
+    using LostObjects =  std::vector<std::pair<size_t,Pointf>>;
     Game(boost::asio::io_context& context): ioc(context){};
 
     void Tick(std::chrono::milliseconds  ms);
@@ -35,6 +36,7 @@ public:
     void SetDirection(Token t, Direction direction);
     double GetDefaultDogSpeed()const;
     void AddMap(Map map);
+    const LostObjects getLostObjcets();
     int AddPlayer(Token t, const std::string& player_name, const Map::Id& id);
     void AddLootGenerator(const std::shared_ptr<loot_gen::LootGenerator>loot_gen);
     const Maps& GetMaps() const noexcept;
@@ -45,7 +47,7 @@ public:
 
 private:
     std::shared_ptr<Ticker> ticker = nullptr;
-    std::unordered_map<Map::Id,std::shared_ptr<GameSession>,MapIdHasher> _gameSession;
+    std::unordered_map<Map::Id,std::shared_ptr<GameSession>,MapIdHasher> _gameSessions;
     bool randomized_coord = false;
     boost::asio::io_context& ioc;
     Players players;

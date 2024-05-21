@@ -29,13 +29,13 @@ int Game::AddPlayer(Token t, const std::string& player_name, const Map::Id& id)
             player->SetRandomized();
         }
         players[t] = player;
-        if (_gameSession.find(id) == _gameSession.end())
+        if (_gameSessions.find(id) == _gameSessions.end())
         {
             auto session = std::make_shared<GameSession>(ioc,_lootGenerator,FindMap(id));
-            _gameSession.emplace(id,session);
+            _gameSessions.emplace(id, session);
 
         }
-        _gameSession[id]->AddPlayer(t,player);
+        _gameSessions[id]->AddPlayer(t, player);
         return players[t]->GetId();
     }
 
@@ -45,7 +45,7 @@ const Game::Maps& Game::GetMaps() const noexcept
     }
     std::optional<std::shared_ptr<Player>> Game::FindPlayer(Token t) const
     {
-        for (auto& session : _gameSession)
+        for (auto& session : _gameSessions)
         {
             auto player_optional = session.second->FindPlayer(t);
             if (player_optional)
@@ -82,7 +82,7 @@ const Game::Players& Game::GetPLayers()
 
 void Game::Tick(std::chrono::milliseconds  ms)
 {
-    for (auto session: _gameSession)
+    for (auto session: _gameSessions)
     {
         session.second->Tick(ms);
 
@@ -111,7 +111,7 @@ void Game::SetTicker(std::chrono::milliseconds ms )
 void Game::SetDirection(Token t, Direction direction)
 {
 
-    for (auto session: _gameSession)
+    for (auto session: _gameSessions)
     {
         if (auto player = session.second->FindPlayer(t); player!= std::nullopt)
         {
@@ -119,6 +119,23 @@ void Game::SetDirection(Token t, Direction direction)
         }
     }
 }
+
+const Game::LostObjects Game::getLostObjcets()
+{
+    LostObjects lostObjects;
+    lostObjects.reserve(players.size());
+    for (const auto& session: _gameSessions)
+    {
+        const LostObjects& session_obj =  session.second->GetLostObjects();
+        for (const auto& obj : session_obj)
+        {
+            lostObjects.push_back(obj);
+        }
+    }
+    lostObjects.shrink_to_fit();
+    return lostObjects;
+}
+
 
 void Game::AddLootGenerator(const std::shared_ptr<loot_gen::LootGenerator>loot_gen)
 {

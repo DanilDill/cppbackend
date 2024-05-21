@@ -38,7 +38,7 @@ namespace http_handler {
         }
         else
         {
-            return PlayerState();
+            return GameState();
         }
     }
 
@@ -62,8 +62,9 @@ namespace http_handler {
         return Ok(body);
     }
 
-    StringResponse GetHandler::PlayerState()
+    StringResponse GetHandler::GameState()
     {
+        boost::json::object obj;
         std::string  body = json_responce::to_json(game_.GetPLayers(), true);
         return Ok(body);
     }

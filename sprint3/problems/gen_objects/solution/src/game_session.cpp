@@ -13,8 +13,38 @@ namespace model
         {
             MovePlayers(ms);
         }
-        //_loot_count = _lootGenerator->Generate(ms,_loot_count,players.size());
-        _lootCount = _lootGenerator->Generate(ms,_lootCount,players.size());
+        UpdateLostObjects(ms);
+
+    }
+    void GameSession::UpdateLostObjects(std::chrono::milliseconds ms)
+    {
+        unsigned new_count = _lootGenerator->Generate(ms,_lootCount,players.size());
+        if (new_count == _lootCount)
+        {
+            return;
+        }
+        _lootCount = new_count;
+        _lostObjects = GenerateLostObjects();
+    }
+
+    GameSession::LostObjects GameSession::GenerateLostObjects()
+    {
+        LostObjects new_objects;
+        new_objects.reserve(_lootCount);
+        size_t loot_types = (_map->GetLootTypes().size()) - 1;
+        size_t road_count = _map->GetRoads().size()-1;
+        for (int i = 0; i < _lootCount; ++i)
+        {
+           size_t type = std::rand() % loot_types;
+           size_t road_num = std::rand() % road_count;
+           Pointf coord = { static_cast<double>(_map->GetRoads()[road_num].GetStart().x), static_cast<double>(_map->GetRoads()[road_num].GetStart().y)};
+           new_objects.push_back(std::make_pair(type,coord));
+        }
+        return new_objects;
+    }
+    const GameSession::LostObjects& GameSession::GetLostObjects()
+    {
+        return  _lostObjects;
     }
     void GameSession::SetSpeed(Token token, Direction direction)
     {

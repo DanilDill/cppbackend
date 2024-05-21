@@ -18,7 +18,7 @@ namespace http_handler
         std::variant <StringResponse, FileResponse> HandleFileRequest()override;
         StringResponse Unauthorized(std::string_view body)override;
         StringResponse PlayerList()override;
-        StringResponse PlayerState()override;
+        StringResponse GameState()override;
         StringResponse Maps()override;
         StringResponse Map(const std::string& map_id)override;
         StringResponse HandleNotFound()override;

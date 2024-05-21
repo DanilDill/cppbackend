@@ -43,7 +43,7 @@ namespace http_handler
     {
         return Ok();
     }
-    StringResponse HeadHandler::PlayerState()
+    StringResponse HeadHandler::GameState()
     {
         return Ok();
     }

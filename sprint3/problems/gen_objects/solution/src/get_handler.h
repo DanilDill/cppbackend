@@ -20,7 +20,7 @@ namespace http_handler
         std::variant <StringResponse, FileResponse> HandleFileRequest()override;
 
         virtual StringResponse PlayerList();
-        virtual StringResponse PlayerState();
+        virtual StringResponse GameState();
         virtual StringResponse Maps();
         virtual StringResponse Map(const std::string& map_id);
         virtual StringResponse HandleNotFound();
