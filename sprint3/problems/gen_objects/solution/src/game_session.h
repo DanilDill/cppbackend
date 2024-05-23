@@ -21,7 +21,7 @@ namespace model
             const LostObjects& GetLostObjects();
         private:
             void UpdateLostObjects(std::chrono::milliseconds ms);
-            LostObjects GenerateLostObjects();
+            void GenerateLostObjects();
             void MovePlayers(std::chrono::milliseconds ms);
             static void  MovePlayer(std::shared_ptr<Player>,std::shared_ptr<Map> map,std::chrono::milliseconds ms);
             static std::optional<Pointf> bounded_move(std::shared_ptr<Dog>dog, std::shared_ptr<Map> map, Pointf pointf);

@@ -65,8 +65,12 @@ namespace http_handler {
     StringResponse GetHandler::GameState()
     {
         boost::json::object obj;
-        std::string  body = json_responce::to_json(game_.GetPLayers(), true);
-        return Ok(body);
+        //std::string  body = json_responce::to_json(game_.GetPLayers(), true);
+        auto players = json_responce::to_json_obj(game_.GetPLayers(), true);
+        obj["players"] = players;
+        auto lost_objects = json_responce::to_json_obj(game_.getLostObjcets());
+        obj["lostObjects"] = lost_objects;
+        return Ok(boost::json::serialize(obj));
     }
 
     StringResponse GetHandler::Maps()

@@ -108,6 +108,8 @@ namespace json_responce
         }
         return json_arr;
     }
+
+
     std::string to_json(const model::Map& map)
     {
         boost::json::object map_json;
@@ -137,5 +139,26 @@ namespace json_responce
         response_json["speed"] = speed;
         response_json["dir"] = to_string(dog._direction);
         return response_json;
+    }
+
+    boost::json::object to_json_obj(std::pair<size_t,model::Pointf> loot)
+    {
+        boost::json::object object;
+        object["type"] = loot.first;
+        boost::json::array pos;
+        pos.emplace_back(loot.second.x);
+        pos.emplace_back(loot.second.y);
+        object["pos"] = pos;
+        return object;
+    }
+
+    boost::json::object to_json_obj(const model::Game::LostObjects& lost_obj)
+    {
+        boost::json::object obj;
+        for (size_t i = 0; i < lost_obj.size();++i )
+        {
+            obj[std::to_string(i)] = to_json_obj(lost_obj[i]);
+        }
+        return obj;
     }
 }

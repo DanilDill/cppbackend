@@ -97,7 +97,7 @@ void Game::SetRandomizedCoord()
 
 bool Game::hasTicker()
 {
-    return ticker == nullptr;
+    return ticker != nullptr;
 }
 
 void Game::SetTicker(std::chrono::milliseconds ms )

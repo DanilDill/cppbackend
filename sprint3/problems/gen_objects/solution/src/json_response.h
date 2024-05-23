@@ -9,6 +9,7 @@ namespace json_responce
     std::string to_json(const model::Map& map);
     boost::json::array to_json(const model::Map::LootTypes& loots);
     boost::json::object to_json_obj(const model::Dog& dog);
+    boost::json::object to_json_obj(const model::Game::LostObjects& lost_obj);
 
     template <typename Key,typename Value,typename Hasher>
     boost::json::object to_json_obj(const std::unordered_map<Key,Value,Hasher>& players, bool add_dog = false)
