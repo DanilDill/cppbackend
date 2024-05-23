@@ -23,11 +23,8 @@ namespace model
             return;
         }
         unsigned new_count = _lootGenerator->Generate(ms,_lootCount,players.size());
-        if (new_count == _lootCount )
-        {
-            return;
-        }
-        _lootCount = new_count;
+
+        _lootCount += new_count;
          GenerateLostObjects();
     }
 
