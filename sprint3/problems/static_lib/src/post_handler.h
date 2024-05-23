@@ -2,8 +2,8 @@
 
 #include "staticfile_loader.h"
 #include "default_handler.h"
-#include "model.h"
-#include "tokenizer.h"
+#include "model/game.h"
+#include "model/tokenizer.h"
 
 namespace http_handler
 {

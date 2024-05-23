@@ -1,9 +1,9 @@
-#include "json_loader.h"
+#include "model_loader.h"
 #include "json_atribute.h"
 #include <fstream>
 #include <iostream>
 #include <boost/json.hpp>
-namespace json_loader
+namespace model
 {
     using  Id = model::Map::Id;
     using Roads = std::vector<model::Road>;

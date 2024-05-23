@@ -1,7 +1,7 @@
 #pragma once
 #include "staticfile_loader.h"
 #include "get_handler.h"
-#include "model.h"
+#include "model/model.h"
 #include "authorization_checker.h"
 
 namespace http_handler

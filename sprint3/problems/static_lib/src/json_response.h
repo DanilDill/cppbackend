@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "model.h"
+#include "model/model.h"
 #include <boost/json.hpp>
 namespace json_responce
 {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "beast.h"
-#include "model.h"
+#include "model/model.h"
 #include <optional>
 #include "json_response.h"
 #include <regex>

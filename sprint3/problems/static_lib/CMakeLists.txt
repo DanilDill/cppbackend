@@ -11,18 +11,15 @@ message(STATUS "${importTargets}")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+add_subdirectory(src/model)
+
 add_executable(game_server
 	src/json_atribute.h
 	src/main.cpp
 	src/http_server.cpp
 	src/http_server.h
 	src/sdk.h
-	src/model.h
-	src/model.cpp
-	src/tagged.h
 	src/boost_json.cpp
-	src/json_loader.h
-	src/json_loader.cpp
 	src/request_handler.cpp
 	src/request_handler.h
 	src/json_response.h
@@ -35,26 +32,14 @@ add_executable(game_server
 	src/get_handler.h
 	src/post_handler.cpp
 	src/post_handler.h
-    src/tokenizer.h
 	src/head_handler.cpp
 	src/head_handler.h
 	src/default_handler.h
 	src/default_handler.cpp
 	src/ticker.h
-	src/loot_generator.h
-	src/loot_generator.cpp
-		src/direction.h
-		src/direction.cpp
-		src/player.h
-		src/player.cpp
-		src/game_map.h
-		src/game_map.cpp
-		src/building.h
-		src/road.h
-		src/road.cpp
-		src/game_session.h
-		src/game_session.cpp
-		src/loot_type.h)
+		)
+
+add_subdirectory(tests)
 
 target_include_directories(game_server PRIVATE CONAN_PKG::boost)
-target_link_libraries(game_server PRIVATE Threads::Threads CONAN_PKG::boost)
+target_link_libraries(game_server PRIVATE Threads::Threads CONAN_PKG::boost model)

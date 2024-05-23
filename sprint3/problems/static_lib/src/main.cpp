@@ -7,7 +7,7 @@
 #include <thread>
 
 #include "http_server.h"
-#include "json_loader.h"
+#include "model/model_loader.h"
 #include "request_handler.h"
 #include "logging_request_handler.h"
 #include "staticfile_loader.h"
@@ -81,7 +81,7 @@ int main(int argc, const char* argv[])
             // 1. Загружаем карту из файла и построить модель игры
             const unsigned num_threads = std::thread::hardware_concurrency();
             net::io_context ioc(num_threads);
-            model::Game game = json_loader::LoadGame(args->config_file,ioc);
+            model::Game game = model::LoadGame(args->config_file,ioc);
             file::file_loader wwwroot(args->wwwroot);
 
             if (args->tick_period != 0)

@@ -2,7 +2,7 @@
 #include "default_handler.h"
 #include "staticfile_loader.h"
 
-#include "model.h"
+#include "model/model.h"
 
 namespace http_handler
 {
