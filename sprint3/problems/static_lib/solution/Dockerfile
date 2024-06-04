@@ -17,6 +17,7 @@ RUN mkdir /app/build && cd /app/build && \
 COPY ./static /app/static
 COPY ./src /app/src
 COPY CMakeLists.txt /app/
+COPY ./tests /app/tests
 
 RUN cd /app/build && \
     cmake -DCMAKE_BUILD_TYPE=Release .. && \
